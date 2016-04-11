@@ -1,27 +1,50 @@
 %% meta_interpreter
-:- module(pcc, [pcc/3,pcc/4,pcc_mp/3,pcc_mp/4]).
+:- module(pcc, [pcc/3,pcc/4,pcc_mp/3,pcc_mp/4,pcc_q/3, filter/3]).
 :-use_module(library(pairs)), use_module(library(rbtrees)).
 
+% pcc(Ans, Query, Z):- 
+%   on backtracking, iterate through all possible results of Query (as
+%   projected onto Ans), with associated probability Z.
 pcc(Ans, Query, Z) :- pcc(Ans, Query, Z, []).
+
+% pcc(Ans, Query, Z, Filter):- 
+%   on backtracking, iterate through all possible results of Query (as
+%   projected onto Ans, and filtered via Filter),
+%   with associated probability Z.
 pcc(Ans, Query, Z, Filter) :-
-	pcc_q(Ans, Query, Filter, Results),
-	member(Ans-Z, Results).
+	pcc_q(Ans, Query, R0),
+	filter(Filter, R0, R1),
+	member(Ans-Z, R1).
+
+% pcc_mp(Ans, Query, Z):- 
+%   return the most probable solution for Query (as
+%   projected onto Ans), with associated probability Z.
 pcc_mp(Ans, Query, Z):- pcc_mp(Ans, Query, Z, []).
+
+% pcc_mp(Ans, Query, Z):- 
+%   return the most probable solution for Query (as
+%   projected onto Ans and filtered via Filter),
+%   with associated probability Z.
 pcc_mp(Ans, Query, Z, Filter) :-
-	pcc_q(Ans, Query, Filter, Results),
-	max(Results, _-0, Ans-Z).
+	pcc_q(Ans, Query, R0),
+	filter(Filter, R0, R1),	
+	max(R1, _-0, Ans-Z).
 
 max([K-V|Rest], _-M, Result):- V >=M, max(Rest, K-V, Result).
 max([_-V|Rest], O-M, Result):- V < M, max(Rest, O-M, Result).
 max([], X, X).
 
+% pcc_q(Ans, Query, Result):- 
+%   Result is the list of all solutions for Query (as projected
+%   into Ans), with associated probability Z.
 
-
-pcc_q(Ans, Query, Filter, Result) :-
+pcc_q(Ans, Query, Result) :-
 	bagof(Ans-R, pcc_m(Query, 1, R), A),
-	normalize(A, A0),
-	filter(Filter, A0, Result).
+	normalize(A, Result).
 
+%% filter(Tests, Results, FilteredResults) :-
+%%    FilteredResults contains only those results in Results whose
+%%    key is unifiable with each element in Tests.
 filter([], R, R).
 filter([Test| Tests], R, R2):-
 	filter_e(Test, R, R1),
