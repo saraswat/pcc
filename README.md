@@ -68,4 +68,13 @@ Z = [win(head, blue, blue)] ;
 false.
 
 
+?- pcc(X,q3(X),Z).
+X = [a, b, c],
+Z = v([a], 0.25) ;
+X = [d],
+Z = v([b], 0.1) ;
+X = [e, f],
+Z = v([c], 0.65).
+
+
 ```
