@@ -99,6 +99,7 @@ pcc_m(true,    I, O):- !, O=I.
 pcc_m(true(K, P), v(L, N), O):- !, N1 is N*P, O=v([K|L], N1).
 pcc_m(X\==Y,   I, O):- !, X \==Y, O=I.
 pcc_m(X=Y,     I, O):- !, X=Y, O=I.
+pcc_m(\+(G),     I, O):- !, \+(G), O=I.
 pcc_m(G,       I, O):- clause(G, Body), pcc_m(Body, I, O).
 
 
