@@ -64,14 +64,13 @@ filter_e(Test, [V|Rest], Rest1):- unifiable(Test,V,_), !,
 filter_e(Test, [_|Rest], Rest1):- filter_e(Test, Rest, Rest1).
 
 normalize(List, Result):-
-        sortKeys(List,List1),
+        sortKeys(List,List1), 	% do this before collecting results via assoc
 	empty_assoc(E),
 	to_assoc(List1, E, Assoc),
 	assoc_to_list(Assoc, V1),
 	sum(V1, 0, Sum),
 	divide(V1, Sum, V2),
-	% do this only after collecting results via assoc
-	sortValues(V2,Result).
+	sortValues(V2,Result). 	% do this after collecting results via assoc, removes dups
 
 sortValues([], []).
 sortValues([v(K,P)-L|R], [v(K,P)-L1|R1]):- sort(L, L1),  sortValues(R,R1).
@@ -99,7 +98,7 @@ pcc_m(true,    I, O):- !, O=I.
 pcc_m(true(K, P), v(L, N), O):- !, N1 is N*P, O=v([K|L], N1).
 pcc_m(X\==Y,   I, O):- !, X \==Y, O=I.
 pcc_m(X=Y,     I, O):- !, X=Y, O=I.
-pcc_m(\+(G),     I, O):- !, \+(G), O=I.
+pcc_m(\+(G),   I, O):- !, \+(G), O=I.
 pcc_m(G,       I, O):- clause(G, Body), pcc_m(Body, I, O).
 
 
