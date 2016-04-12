@@ -18,8 +18,18 @@ pcc(Ans, Query, Z) :- pcc(Ans, Query, Z, []).
 pcc(Ans, Query, Z, Filter) :-
 	pcc_q(Ans, Query, R0),
 	filter(Filter, R0, R1),
-	member(Z-Ans, R1).
+	gather(R1, [], R2),
+	member(Ans-Z, R2).
 
+gather([], X, X).
+gather([v(K,P)-[M]|R], In, Out) :-
+      addIn(In, M, K, P, In1),
+       gather(R, In1, Out).
+
+addIn([M-v(Ks,P)|R], M, K, Q, Out) :- !, Out=[M-v([K-Q|Ks],P1)|R], P1 is P+Q.
+addIn([M1-P1|R], M,  K, Q, [M1-P1|Out]) :- addIn(R,M, K, Q, Out).
+addIn([], M, K, Q, [M-v([K-Q],Q)]).
+	
 % pcc_mp(Ans, Query, Z):- 
 %   return the most probable solution for Query (as
 %   projected onto Ans), with associated probability Z.
