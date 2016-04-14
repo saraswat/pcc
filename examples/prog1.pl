@@ -1,14 +1,8 @@
 %% Here is the object program.
 
-biasedCoin(head) :- true(head,0.4).
-biasedCoin(tail) :- true(tail, 0.6).
-
-urn1(blue):- true(urn1b, 0.7).
-urn1(red) :- true(urn1t, 0.3).
-
-urn2(red) :- true(urn2r, 0.2).
-urn2(green):- true(urn2g, 0.3).
-urn2(blue):- true(urn2b, 0.5).
+biasedCoin(C) :- sample(C, [head-0.4,tail-0.6], coin).
+urn1(U)       :- sample(U, [blue-0.7,red-0.3], urn1).
+urn2(U)       :- sample(U, [red-0.2,green-0.3,blue-0.5], urn2).
 
 system(Coin, C1, C2):- biasedCoin(Coin), urn1(C1), urn2(C2).
 
