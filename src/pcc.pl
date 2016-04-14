@@ -1,5 +1,5 @@
 %% meta_interpreter
-:- module(pcc, [pcc/3,pcc/4,pcc_mp/3,pcc_mp/4,pcc_q/3, filter/3]).
+:- module(pcc, [pcc/3,pcc/4,pcc_mp/3,pcc_mp/4,pcc_q/3, filter/3, pcc_flags/1]).
 :-use_module(library(pairs)), use_module(library(rbtrees)).
 
 % pcc(Ans, Query, Z):- 
@@ -19,7 +19,9 @@ pcc(Ans, Query, Z, Filter) :-
 	pcc_q(Ans, Query, R0),
 	filter(Filter, R0, R1),
 	gather(R1, [], R2),
-	member(Ans-Z, R2).
+	((pcc_flags(verbose), !, member(Ans-Z, R2));
+	  member(Ans-v(_,Z), R2)).
+
 
 gather([], X, X).
 gather([v(K,P)-[M]|R], In, Out) :-
@@ -68,8 +70,11 @@ filter_t(Test, [v(K,P)-L|Rest], Rest1):-
 	((L1=[], Rest1=Rest2); (L1=[_|_], Rest1=[v(K,P)-L1|Rest2])),
 	filter_t(Test, Rest, Rest2).
 
+unifiable(X,Y):- unifiable(X,Y,_).
 filter_e(_,[],[]).
-filter_e(Test, [V|Rest], Rest1):- unifiable(Test,V,_), !, 
+filter_e(-Test, [V|Rest], Rest1):- \+ unifiable(Test,V), !, 
+	Rest1=[V|Rest2], filter_e(Test, Rest, Rest2).
+filter_e(Test, [V|Rest], Rest1):- unifiable(Test,V), !, 
 	Rest1=[V|Rest2], filter_e(Test, Rest, Rest2).
 filter_e(Test, [_|Rest], Rest1):- filter_e(Test, Rest, Rest1).
 
@@ -104,12 +109,22 @@ get_or_default(_, _, Def, Def).
 
 pcc_m((G1,G2), I, O):- !, pcc_m(G1, I, M), pcc_m(G2, M, O).
 pcc_m((G1;G2), I, O):- !, (pcc_m(G1, I, O); pcc_m(G2, I, O)).
-pcc_m(true,    I, O):- !, O=I.
 pcc_m(true(K, P), v(L, N), O):- !, N1 is N*P, O=v([K|L], N1).
-pcc_m(X\==Y,   I, O):- !, X \==Y, O=I.
-pcc_m(X=Y,     I, O):- !, X=Y, O=I.
-pcc_m(\+(G),   I, O):- !, \+(G), O=I.
+pcc_m(G,       I, O):- builtin(G), !, call(G), O=I.  
 pcc_m(G,       I, O):- clause(G, Body), pcc_m(Body, I, O).
 
+builtin(true).
+builtin(_=_).
+builtin(\+(_)).
+builtin(_>_).
+builtin(_>=_).
+builtin(_<_).
+builtin(_=<_).
+builtin(_==_).
+builtin(_\==_).
+builtin(_ is _).
 
 
+%% Assert pcc_flags(verbose) to turn on enumeration of labels contributing to
+%% an outcome probability.
+pcc_flags(is_defined).

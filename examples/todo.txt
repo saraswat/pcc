@@ -1,0 +1,4 @@
+% Can you encode Markov chains?
+% Can you encode Boltzman machines?
+% Can you describe HMMs?
+% What is the advantage of being able to describe them like this?
