@@ -2,17 +2,18 @@
 % Succeeds when a given outcome does not occur on any one of N tosses.
 % cf https://dtai.cs.kuleuven.be/problog/tutorial/basic/01_coins.html
 
-zeroHeads(N, X):- coins(N, Coins), zeroHeads(Coins, true, X).
+% someHeads(N,P, X):-
+%  the probability of getting at least one head in N tosses of a coin with prob
+%  P of coming up heads.
 
-zeroHeads([], R, R).
-zeroHeads([heads|_],_,false).
-zeroHeads([tails|X],R,S):- zeroHeads(X, R, S).
+% The technique is to think of the N coin tosses as happening conjunctively,
+% and then combine their results with an and. The probability distributions
+% work out obviously in the right way.
+someHeads(N, P, X):- coins(N, P, Coins), or(Coins, X).
 
-coin(Label, Prob, heads):- true(h(Label), Prob).
-coin(Label, Prob, tails):- Prob1 is 1-Prob, true(t(Label), Prob1).
-
-coins(0, []).
-coins(N, [X|L]):- N > 0, coin(N, 0.6, X), N1 is N-1,  coins(N1, L).
+% true is heads
+coins(0, _, []).
+coins(N, P, [X|L]):- N > 0, true(X, N, P), N1 is N-1,  coins(N1, P, L).
 
 
 
