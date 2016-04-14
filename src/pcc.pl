@@ -1,5 +1,7 @@
 %% meta_interpreter
-:- module(pcc, [pcc/3,pcc/4,pcc_mp/3,pcc_mp/4,pcc_q/3, filter/3, pcc_flags/1]).
+:- module(pcc, [pcc/3,pcc/4,pcc_mp/3,pcc_mp/4,pcc_q/3, filter/3, pcc_flags/1,
+	        and/2, or/2, not/2, true/3, bool/2,
+		sample/3]).
 :-use_module(library(pairs)), use_module(library(rbtrees)).
 
 % pcc(Ans, Query, Z):- 
@@ -107,9 +109,9 @@ to_assoc([K-L|Rest], Assoc_i, Assoc_o):-
 get_or_default(K, Assoc, _, V):- get_assoc(K, Assoc, V1), !, V1=V.
 get_or_default(_, _, Def, Def).
 
+pcc_m(true(K, P), v(L, N), O):- !, N1 is N*P, O=v([K|L], N1).
 pcc_m((G1,G2), I, O):- !, pcc_m(G1, I, M), pcc_m(G2, M, O).
 pcc_m((G1;G2), I, O):- !, (pcc_m(G1, I, O); pcc_m(G2, I, O)).
-pcc_m(true(K, P), v(L, N), O):- !, N1 is N*P, O=v([K|L], N1).
 pcc_m(G,       I, O):- builtin(G), !, call(G), O=I.  
 pcc_m(G,       I, O):- clause(G, Body), pcc_m(Body, I, O).
 
@@ -124,7 +126,35 @@ builtin(_==_).
 builtin(_\==_).
 builtin(_ is _).
 
+% -- Boolean utility predicates.
+
+bool(and(X,Y), S):- bool(X, Xr), bool(Y,Yr), and([Xr,Yr], S).
+bool(or(X,Y), S):- bool(X, Xr), bool(Y,Yr), or([Xr,Yr], S).
+bool(not(X), S):- bool(X, Xr), not(Xr,S).
+bool(and(X), S):- and(X, S).
+bool(or(X), S):- or(X,S).
+bool(true, true).
+bool(false, false).
+
+and([false|_], false).
+and([true|X],  A):- and(X,A).
+and([], true).
+
+or([true|_], true).
+or([false|X],  A):- or(X,A).
+or([], false).
+
+not(false,true).
+not(true,false).
+
+sample(X, [X-P|_], Label):- true(l(Label,X), P).
+sample(X, [_|R],   Label):- sample(X, R, Label).
+
+% a special case of a finite pd
+true(true,  Label, P):- true(l(Label,true), P).
+true(false, Label, P):- P1 is 1-P, true(l(Label,false), P1).
 
 %% Assert pcc_flags(verbose) to turn on enumeration of labels contributing to
 %% an outcome probability.
+:- dynamic pcc_flags/1.
 pcc_flags(is_defined).
