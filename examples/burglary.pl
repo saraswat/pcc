@@ -1,5 +1,5 @@
-burglary(B) :- sample(B, [true-0.001,false-0.999],burglary).
-earthquake(E):- sample(E, [true-0.002,false-0.998],earthquake).
+burglary(B) :- burglary#B~true/0.001+false/0.999.
+earthquake(E):- eq#E~true/0.002+false/0.998.
 
 alarm(B, E, A) :- burglary(B), earthquake(E),	alarm_t(B, E, A).
 

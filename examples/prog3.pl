@@ -1,15 +1,9 @@
-biasedCoin(head) :- true(coin_head,0.4).
-biasedCoin(tail) :- true(coin_tail, 0.6).
+biasedCoin(C) :- coin#C~head/0.4+tail/0.6.
+urn1(U)       :- u1#U~blue/0.7+red/0.3.
+urn2(U)       :- u2#U~red/0.2+green/0.3+blue/0.5.
 
-urn1(blue):- true(urn1b, 0.7).
-urn1(red) :- true(urn1r, 0.3).
-
-urn2(red) :- true(urn2r, 0.2).
-urn2(green):- true(urn2g, 0.3).
-urn2(blue):- true(urn2b, 0.5).
-
-%%%% variant 1: generate worlds/systems & test
 system(Coin, C1, C2):- biasedCoin(Coin), urn1(C1), urn2(C2).
+
 
 % define win as "head OR equal color"
 win(head, _, _ ).

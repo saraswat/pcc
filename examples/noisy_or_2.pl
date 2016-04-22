@@ -10,7 +10,12 @@
 % and then combine their results with an and. The probability distributions
 % work out obviously in the right way.
 
-someHead(X) :- true(X1, one, 0.6), true(X2, two, 0.5), (X1=X; X2=X).
+someHead(X) :-
+	1#X1~true/0.6+false/0.4, 2#X2~true/0.5+false/0.5,
+	((X=true,(X1=true; X2=true));
+	 (X=false,X1=false,X2=false)).
+
+someHead2(X) :- X1~true/0.6+false/0.4, X2~true/0.5+false/0.5, X~X1/0.5+X2/0.5.
 
 
 

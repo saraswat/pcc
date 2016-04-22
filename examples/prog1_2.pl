@@ -1,8 +1,8 @@
 %% Here is the object program.
 
-biasedCoin(C) :- coin#C~head/0.4+tail/0.6.
-urn1(U)       :- u1#U~blue/0.7+red/0.3.
-urn2(U)       :- u2#U~red/0.2+green/0.3+blue/0.5.
+biasedCoin(C) :- sample(C, [head-0.4,tail-0.6], coin).
+urn1(U)       :- sample(U, [blue-0.7,red-0.3], urn1).
+urn2(U)       :- sample(U, [red-0.2,green-0.3,blue-0.5], urn2).
 
 system(Coin, C1, C2):- biasedCoin(Coin), urn1(C1), urn2(C2).
 

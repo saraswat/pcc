@@ -38,10 +38,32 @@ The system implemented here is a variant in which sample goals are dealt with di
 
 Thus we get the output distribution through a typical sum of products calculation. One can think of the division by `Z` as simply re-normalizing to take into account the assignment of zero weight to failed derivations. 
 
-### Probabilistic interpretation
-From the probabilistic programming point of view, we can see pcc as a language that permits us to use the power of goals to assemble posterior probability distribution from the probability distributions of the individual random variables. Importantly, constraints can be used to represent joint dependencies between random variables (and other, non-random, variables). The full power of primitive constraints, conjunctive composition, and recursive definitions is available to specify these joint dependencies (see below for disjunction). 
+### Disjunction
+A fundamental property of the above system is that (the goals associated with) multiple random variables are combined _conjunctively_. For instance, the situation in which we toss two coins is modeled through
+```
+X ~ a/0.5+b/0.5, Y ~ a/0.5+b/0.5
+```
+This gives us the four possible answers, each with the appropriate weight. Since there are no joint constraints that might be falsified, `Z=1`, and the weight is the probability.
 
-In a given programming situation, then, the decision a probabilistic programmer must make is (a) determine the basic random variables, and their associated pds, (b) the joint dependencies between the variables. Use sample goals to implement (a), and use constraints, conjunction, recursive definition to implement (b). 
+There is no natural interpretation for the _disjunctive_ combination of random variables. Consider for instance:
+```
+X ~ a/0.6+b/0.4 ; Y ~ a/0.3+b/0.7
+```
+From our operational interpretation, we will get four answer constraints, which we can write as:
+```
+X = a/0.6;
+X = b/0.4; 
+Y = a/0.3;
+Y = b/0.7
+```
+Note that the sum of the weights is now _2_, not 1! It is not clear what renormalization means in this setting. 
+
+Disjunction, however, continues to make sense in the constraint language, as a way of providing alternate constraints. We permit therefore goals of the form `G1;G2`, where `G1` and `G2` do not invoke sample goals. Say that such a goal is _determinate_ if, given any choice for the random variables in the program, at most one alterantive is consistent. For a determinate disjunction we will continue to have the propery that there is at most one successful derivation for a given label. However, if some disjunctive goal is not determinate it is possible that a particular label is associated with multiple answer constraints. This is a feature, not a bug; the associated answer is simply the disjunction of these constraints. 
+
+### Probabilistic interpretation
+From the probabilistic programming point of view, we can see pcc as a language that permits us to use the power of goals to assemble posterior probability distribution from the probability distributions of the individual random variables. Importantly, constraints can be used to represent joint dependencies between random variables (and other, non-random, variables). The full power of primitive constraints, conjunctive composition, and recursive definitions is available to specify these joint dependencies, together with the restriction on disjunction specified above. 
+
+In a given programming situation, then, the decision a probabilistic programmer must make is (a) determine the basic random variables, and their associated pds, (b) the joint dependencies between the variables. Use sample goals to implement (a), and use constraints, conjunction, disjunction, recursive definition to implement (b). 
 
 
 ### Monotonicity
@@ -51,11 +73,10 @@ From the above discussion it should be clear that pcc satisfies a certain monoto
 
 The pcc language is also compatible with the idea that the probabilities in a pd may actually be _symbolic variables_ rather than concrete numbers. More generally, the probabilities may be represented by _arithmtic terms_ (e.g. `p+q*r/2`). Now the operations on probabilities performed during pcc execution (multiplication, addition, division for normalization) need to be performed over arbitrary arithmetic terms. all one needs is a constraint solver with the power to deal with such operations on arithmetic terms.
 
+### More implementation details
 
+Sample goals can be associated by the user with labels, as in `t#X~pd`. (If the user does not supply a label, one is generated.) A label is just a term. The meta-interpreter carries with it the current set of labels, obtained by constructing a label from each path through a sample goal that it has taken. (The label is constructed from the label for the goal and the index of the choice made for the current derivation.) Thus every successful derivation will have zero or more labels (and a weight, obtained by multiplying the probability associated with each label). Proofs with the same (sorted sequence of) labels are collected, dropping duplicates, giving a list whose elements are of the form `v(Label,P)-L`, where `L` is a list of answers with the same label. (An answer is an instantiated version of the original goal, representing a solution).  The result is then normalized, with the weight for each element being divided by the sum of the weights for all elements. After this, the probabilities for the same answer are summed up (across the different labels), and the result -- a probability distribution across answers -- presented to the user.
 
-The system uses a "symbolic" execution technique, implemented by a meta-interpreter, instead of sampling. In this technique, the meta-interpreter tracks labels, and their associated probability values. Any refutation will have zero or more labels, with an associated weight obtained by multiplying the numbers associated with the labels. Proofs with the same (sorted) sequence of labels are collected, dropping duplicates, giving a list whose elements are of the form `v(Label,P)-L`, where `L` is a list of answers with the same label. (An answer is an instantiated version of the original goal, representing a solution).  The result is then normalized, with the weight for each element being divided by the sum of the weights for all elements. After this, if desired, the probabilities for the same answer are summed up (across the different labels), and the result -- a probability distribution across answers -- presented to the user.
-
-Important Caveat: Programs should satisfy the property that given a (sorted) label set, there is at most one proof the query with that label set. Otherwise, a call to `pcc/3` will fail (see the head of the second clause for `gather/3`). You can still get useful information about the output probability distribution by disabling gather. Now you will see for each label the collection of proofs with that label. However, there is no way to "divide up" the probability associated with that label between these different answers.
 
 
 ## Tested with SWI-Prolog.
@@ -104,28 +125,39 @@ Z = v([[tail, urn1t, urn2g]-0.054], 0.054) ;
 X = win(tail, red, red),
 Z = v([[tail, urn1t, urn2r]-0.036], 0.036).
 
-?- pcc(X,query(X), Z, [win(_,_,_)]).
-X = win(head, blue, blue),
-Z = v([[head, urn1b, urn2b]-0.13999999999999999], 0.13999999999999999) ;
-X = win(head, blue, green),
-Z = v([[head, urn1b, urn2g]-0.08399999999999999], 0.08399999999999999) ;
-X = win(head, blue, red),
-Z = v([[head, urn1b, urn2r]-0.055999999999999994], 0.055999999999999994) ;
-X = win(head, red, blue),
-Z = v([[head, urn1t, urn2b]-0.06], 0.06) ;
-X = win(head, red, green),
-Z = v([[head, urn1t, urn2g]-0.036], 0.036) ;
-X = win(head, red, red),
-Z = v([[head, urn1t, urn2r]-0.024], 0.024) ;
-X = win(tail, blue, blue),
-Z = v([[tail, urn1b, urn2b]-0.21], 0.21) ;
-X = win(tail, red, red),
-Z = v([[tail, urn1t, urn2r]-0.036], 0.036) ;
+?- [src/pcc].
+true.
+
+?- [examples/prog1].
+true.
+
+?- pcc(X,query(X),Z).
+Z = [win(head, blue, blue)]-0.13999999999999999 ;
+Z = [win(head, blue, green)]-0.08399999999999999 ;
+Z = [win(head, blue, red)]-0.055999999999999994 ;
+Z = [win(head, red, blue)]-0.06 ;
+Z = [win(head, red, green)]-0.036 ;
+Z = [win(head, red, red)]-0.024 ;
+Z = [win(tail, blue, blue)]-0.21 ;
+Z = [loss(tail, blue, green)]-0.126 ;;
+Z = [loss(tail, blue, red)]-0.084 ;
+Z = [loss(tail, red, blue)]-0.09 ;
+Z = [loss(tail, red, green)]-0.054 ;
+Z = [win(tail, red, red)]-0.036.
+
+?- pcc(X,query(X),Z,[win(_,_,_)]).
+Z = [win(head, blue, blue)]-0.13999999999999999 ;
+Z = [win(head, blue, green)]-0.08399999999999999 ;
+Z = [win(head, blue, red)]-0.055999999999999994 ;
+Z = [win(head, red, blue)]-0.06 ;
+Z = [win(head, red, green)]-0.036 ;
+Z = [win(head, red, red)]-0.024 ;
+Z = [win(tail, blue, blue)]-0.21 ;
+Z = [win(tail, red, red)]-0.036 ;
 false.
 
-
 ?- pcc_mp(X,query(X), Z, [win(_,_,_)]).
-X = v([tail, urn1b, urn2b], 0.21),
+X = v([l(coin, tail), l(u1, blue), l(u2, blue)], 0.21),
 Z = [win(tail, blue, blue)] ;
 false.
 ```

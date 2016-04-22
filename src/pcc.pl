@@ -1,9 +1,10 @@
 %% meta_interpreter
 :- module(pcc, [pcc/3,pcc/4,pcc_mp/3,pcc_mp/4,pcc_q/3, filter/3, pcc_flags/1,
 	        and/2, or/2, not/2, true/3, bool/2,
-		sample/3]).
+		sample/3, (~)/2, (#)/2]).
 :-use_module(library(pairs)), use_module(library(rbtrees)).
-
+:- op( 700, xfx, user:(~)).
+:- op( 800, xfx, user:(#)).
 % pcc(Ans, Query, Z):- 
 %  Z = v(Key,P), where Key is a sorted list of keys associated with
 %  probabilistic choices, P is the normalized probability.  Ans is
@@ -21,12 +22,12 @@ pcc(Ans, Query, Z, Filter) :-
 	pcc_q(Ans, Query, R0),
 	filter(Filter, R0, R1),
 	gather(R1, [], R2),
-	((pcc_flags(verbose), !, member(Ans-Z, R2));
-	  member(Ans-v(_,Z), R2)).
+	((pcc_flags(verbose), !, member(Z, R2));
+	  member(A-v(_,Z1), R2), Z=A-Z1).
 
 
 gather([], X, X).
-gather([v(K,P)-[M]|R], In, Out) :-
+gather([v(K,P)-M|R], In, Out) :-
       addIn(In, M, K, P, In1),
        gather(R, In1, Out).
 
@@ -62,23 +63,25 @@ pcc_q(Ans, Query, Result) :-
 
 %% filter(Tests, Results, FilteredResults) :-
 %%    FilteredResults contains only those results in Results whose
-%%    key is unifiable with each element in Tests.
+%%    key is unifiable with each test in Tests.
 filter([], R, R).
 filter([Test| Tests], R, R2):- filter_t(Test, R, R1), filter(Tests, R1, R2).
 
 filter_t(_, [], []).
-filter_t(Test, [v(K,P)-L|Rest], Rest1):-
-	filter_e(Test,L, L1),
-	((L1=[], Rest1=Rest2); (L1=[_|_], Rest1=[v(K,P)-L1|Rest2])),
-	filter_t(Test, Rest, Rest2).
+filter_t(Test, [V-L|Z], Ans):-	filter_e(Test,L), !,
+	Ans=[V-L|Ans1], filter_t(Test, Z, Ans1).
+filter_t(Test, [_|Z], Ans):- filter_t(Test, Z, Ans).
 
 unifiable(X,Y):- unifiable(X,Y,_).
-filter_e(_,[],[]).
-filter_e(-Test, [V|Rest], Rest1):- \+ unifiable(Test,V), !, 
-	Rest1=[V|Rest2], filter_e(Test, Rest, Rest2).
-filter_e(Test, [V|Rest], Rest1):- unifiable(Test,V), !, 
-	Rest1=[V|Rest2], filter_e(Test, Rest, Rest2).
-filter_e(Test, [_|Rest], Rest1):- filter_e(Test, Rest, Rest1).
+
+% filter_e(Test, Answers):-
+%   succeeds if every answer in Answers entails Test.
+filter_e(_,[]).
+filter_e(-Test, [V|Rest]):-!, \+ unifiable(Test,V), filter_e(Test, Rest).
+filter_e( Test, [V|Rest]):-      unifiable(Test,V), filter_e(Test, Rest).
+
+% normalize(Ans, Result):-
+%  Result 
 
 normalize(List, Result):-
         sortKeys(List,List1), 	% do this before collecting results via assoc
@@ -147,8 +150,14 @@ or([], false).
 not(false,true).
 not(true,false).
 
-sample(X, [X-P|_], Label):- true(l(Label,X), P).
-sample(X, [_|R],   Label):- sample(X, R, Label).
+X ~ PD :- x(_)#X~PD.
+L#X ~ PD :- sample(X, PD, L).
+sample(X, X/P, Label):- true(l(Label,X), P).
+sample(X, _+X/P, Label):- true(l(Label,X), P).
+sample(X, R+_,   Label):- sample(X, R, Label).
+
+%sample(X, [X-P|_], Label):- true(l(Label,X), P).
+%sample(X, [_|R],   Label):- sample(X, R, Label).
 
 % a special case of a finite pd
 true(true,  Label, P):- true(l(Label,true), P).
