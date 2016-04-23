@@ -65,6 +65,7 @@ From the probabilistic programming point of view, we can see pcc as a language t
 
 In a given programming situation, then, the decision a probabilistic programmer must make is (a) determine the basic random variables, and their associated pds, (b) the joint dependencies between the variables. Use sample goals to implement (a), and use constraints, conjunction, disjunction, recursive definition to implement (b). 
 
+Conditionalization is done by simply providing constraints on the arguments in the goal, this information may be about the value of some of the random variables. With this information, all choices of the random variable incosnistent with these constraints will fail.
 
 ### Monotonicity
 From the above discussion it should be clear that pcc satisfies a certain monotonicity condition. The weight distribution associated with any goal `p(t)` can actually be computed from the weight distribution for the goal `p(X)` (for any choice of variable `X`): simply take every answer constraint `di` for `p(X)` and conjoin the constraint `X=t` to it. If this conjunction is inconsistent, drop the answer. The set of constraints that remains is exactly the set of answers for `p(t)`, and they have the right weights. 
