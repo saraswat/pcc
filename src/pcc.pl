@@ -31,7 +31,7 @@ gather([v(K,P)-M|R], In, Out) :-
       addIn(In, M, K, P, In1),
        gather(R, In1, Out).
 
-addIn([M-v(Ks,P)|R], M, K, Q, Out) :- !, Out=[M-v([K-Q|Ks],P1)|R], P1 is P+Q.
+addIn([M-v(Ks,P)|R], M1, K, Q, Out) :- M =@= M1, !, Out=[M-v([K-Q|Ks],P1)|R], P1 is P+Q.
 addIn([M1-P1|R], M,  K, Q, [M1-P1|Out]) :- addIn(R,M, K, Q, Out).
 addIn([], M, K, Q, [M-v([K-Q],Q)]).
 	
