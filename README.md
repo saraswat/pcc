@@ -27,7 +27,9 @@ CLP satisfies the completeness property that if for some constraint `c1` it is t
 We showed in [RCC, FSTTCS 2005](http://saraswat.org/lambdarcc.pdf) how the two could be combined, while preserving constraint-completeness.
 
 ## Probabilistic CCP
-In the [probablistic CCP framework, Concur 1997](http://www-cs-students.stanford.edu/~vgupta/publications/probcc-concur97.pdf), we add _sampling agents_: `X ~ pd` where `pd` is a probability distribution (e.g. a discrete pd such at `0:0.6 + 1:0.4`, specifying that `0` is returned with probability `0.6` and `1` with probability `0.4`). While the paper introduced this idea in the context of CCP, here we develop this in the context of logic programming, by adding _sampling goals_ `X ~ pd`.
+In the [probablistic CCP framework, Concur 1997](http://www-cs-students.stanford.edu/~vgupta/publications/probcc-concur97.pdf), we add _sampling agents_: `X ~ pd` where `pd` is a probability distribution (e.g. a discrete pd such at `0:0.6 + 1:0.4`, specifying that `0` is returned with probability `0.6` and `1` with probability `0.4`). 
+
+While the paper introduced this idea in the context of CCP, here we develop this in the context of logic programming, by adding _sampling goals_ `X ~ pd`. It turns out that this form of pcc (with probability distributions restricted to be finite and discrete) is closely related to the "Stochastic Logic Programs" (SLPs) of Muggleton and Cussens (see [1]). Below we continue with our own development of these ideas, and relate them back to SLPs in the appropriate section.
 
 ### Operational interpretation
 Operationally, the intuitive idea is that when the time comes to _execute_ such a goal, we sample from `pd` to generate a value `t`, and replace the goal with the constraint `X=t`. If eventually this leads to failure (there is no refutation), then this execution is discarded. Otherwise the execution results in some answer constraint `c`. We repeat execution `N` times, each time sampling from the relevant distribution, when executing `X ~ pd`. Given the `K` successful executions, we count the number of times a given constraint occurs as an answer (upto renaming of existentially quantified variables), and divide by `K` to obtain a probability distribution over the answer constraints (the posteriori distribution). Thus we look at probabilistic logic programs (in this fashion) as defining probability distributions over the answer constraints for goals `p(t)`. 
@@ -79,7 +81,30 @@ The pcc language is also compatible with the idea that the probabilities in a pd
 Sample goals can be associated by the user with labels, as in `t#X~pd`. (If the user does not supply a label, one is generated.) A label is just a term. The meta-interpreter carries with it the current set of labels, obtained by constructing a label from each path through a sample goal that it has taken. (The label is constructed from the label for the goal and the index of the choice made for the current derivation.) Thus every successful derivation will have zero or more labels (and a weight, obtained by multiplying the probability associated with each label). Proofs with the same (sorted sequence of) labels are collected, dropping duplicates, giving a list whose elements are of the form `v(Label,P)-L`, where `L` is a list of answers with the same label. (An answer is an instantiated version of the original goal, representing a solution).  The result is then normalized, with the weight for each element being divided by the sum of the weights for all elements. After this, the probabilities for the same answer are summed up (across the different labels), and the result -- a probability distribution across answers -- presented to the user.
 
 
+## Related work
+pcc is related to (impure) Stochastic Logic Programs (SLP) as developed by [1]. (This version of SLP permits non-ground derivations, as does pcc.) SLPs permit the clauses of a predicate `p/n` to be labeled with numbers between 0 and 1 that sum up to 1. The probability of a derivation is the product of the probabilities of the clauses used in it. The related notion of probability of a refutation is obtained by shifting the probability mass to refutations: the probability of a refutation is obtained by normalizing with the sum of the probabilities of all refutations, and assigning 0 to derivations that are not refutations. Pure SLPs are ones in which every predicate `p/n` that has clauses is decorated with probabilities; impure SLPs admit predicates whose clauses do not have probability distributions. 
 
+The connection is clear. Every pcc logic program over _discrete_ probability distributions `t1/p1+...+tk/pk` c
+can be thought of as an impure SLP as follows. Every goal `X~pd` is replaced by a call p(X) to a new predicate p/1 (p/1 does not occur anywhere else in the program) with the clauses:
+```
+p1: p(t1).
+...
+pk: p(tk).
+```
+Clearly, there is an isomorphism between derivations of the pcc program and the associated SLP program.
+
+Conversely, every impure SLP program can be translated into a pcc program over discrete probability distributions as follows. For every predicate `q/n` whose `k` clauses `C1,...,Ck` have associated probabilities `p1, ..., pk` replace the clauses `pi:q(t1,...,tm):- Body` with `q(i, t1,...,tm):- Body`, and replace each call `q(s1,...,sm)` with `X~1/p1+...+1/pk, q(X,s1,...,sm)`. Now derivations of the original SLP program are isomorphic to derivations of the resulting pcc program in the obvious way. 
+
+In more detail, note that the notion `red(r)` (Definition 6 of [1]), capturing just those clauses in the refutation `r` that are probabilistic, corresponds to the pcc notion of labels. 
+
+An attractive aspect of this connection is that [1] works out the connections between stochastic context-free grammars, Markov chains, and Hidden Markov Models on the one hand and SLP programs on the other. These connections apply, inter alia, to pcc programs over discrete pds.
+
+TODO: Relate the work on unnormalized SLP to pcc.
+
+TODO: Investigate applicability of parameter estimation techniques [1,Sec 4] to pcc.
+
+## Bibliography
+[1] James Cussins "Parameter Estimation in Stochastic Logic Programs", Machine Learning, 44, 245-271, 2001.
 ## Tested with SWI-Prolog.
 
 EXAMPLE TRACE
