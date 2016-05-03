@@ -99,6 +99,8 @@ In more detail, note that the notion `red(r)` (Definition 6 of [1]), capturing j
 
 An attractive aspect of this connection is that [1] works out the connections between stochastic context-free grammars, Markov chains, and Hidden Markov Models on the one hand and SLP programs on the other. These connections apply, inter alia, to pcc programs over discrete pds.
 
+We note the advantage of the pcc approach. pcc introduces probabilities orthogonally to clause selection. Hence there is no requirement that the probability distribution `pd` in `X ~ pd` be finite or discrete. Unfortunately, by tying probabilistic choice to clause selection, SLP commits to this special case. 
+
 TODO: Relate the work on unnormalized SLP to pcc.
 
 TODO: Investigate applicability of parameter estimation techniques [1,Sec 4] to pcc.
