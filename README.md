@@ -29,7 +29,9 @@ We showed in [RCC, FSTTCS 2005](http://saraswat.org/lambdarcc.pdf) how the two c
 ## Probabilistic CCP
 In the [probablistic CCP framework, Concur 1997](http://www-cs-students.stanford.edu/~vgupta/publications/probcc-concur97.pdf), we add _sampling agents_: `X ~ pd` where `pd` is a probability distribution (e.g. a discrete pd such at `0:0.6 + 1:0.4`, specifying that `0` is returned with probability `0.6` and `1` with probability `0.4`). 
 
-While the paper introduced this idea in the context of CCP, here we develop this in the context of logic programming, by adding _sampling goals_ `X ~ pd`. It turns out that this form of pcc (with probability distributions restricted to be finite and discrete) is closely related to the "Stochastic Logic Programs" (SLPs) of Muggleton and Cussens (see [1]). Below we continue with our own development of these ideas, and relate them back to SLPs in the appropriate section.
+While the paper introduced this idea in the context of CCP, here we develop this in the context of logic programming, by adding _sampling goals_ `X ~ pd`. It turns out that this form of pcc (with probability distributions restricted to be finite and discrete) is closely related to the "Stochastic Logic Programs" (SLPs) of Muggleton and Cussens (see [1]). 
+
+Below we continue with our own development of these ideas, and relate them back to SLPs in the appropriate section.
 
 ### Operational interpretation
 Operationally, the intuitive idea is that when the time comes to _execute_ such a goal, we sample from `pd` to generate a value `t`, and replace the goal with the constraint `X=t`. If eventually this leads to failure (there is no refutation), then this execution is discarded. Otherwise the execution results in some answer constraint `c`. We repeat execution `N` times, each time sampling from the relevant distribution, when executing `X ~ pd`. Given the `K` successful executions, we count the number of times a given constraint occurs as an answer (upto renaming of existentially quantified variables), and divide by `K` to obtain a probability distribution over the answer constraints (the posteriori distribution). Thus we look at probabilistic logic programs (in this fashion) as defining probability distributions over the answer constraints for goals `p(t)`. 
@@ -82,7 +84,7 @@ Sample goals can be associated by the user with labels, as in `t#X~pd`. (If the 
 
 
 ## Related work
-pcc is related to (impure) Stochastic Logic Programs (SLP) as developed by [1]. (This version of SLP permits non-ground derivations, as does pcc.) SLPs permit the clauses of a predicate `p/n` to be labeled with numbers between 0 and 1 that sum up to 1. The probability of a derivation is the product of the probabilities of the clauses used in it. The related notion of probability of a refutation is obtained by shifting the probability mass to refutations: the probability of a refutation is obtained by normalizing with the sum of the probabilities of all refutations, and assigning 0 to derivations that are not refutations. Pure SLPs are ones in which every predicate `p/n` that has clauses is decorated with probabilities; impure SLPs admit predicates whose clauses do not have probability distributions. 
+pcc is related to (impure) Stochastic Logic Programs (SLP) as developed by [1]. (This version of SLP permits non-ground derivations, as does pcc.) SLPs permit the clauses of a predicate `p/n` to be labeled with numbers between 0 and 1 that sum up to 1. The probability of a derivation is the product of the probabilities of the clauses used in it. The related notion of probability of a refutation is obtained by shifting the probability mass to refutations: the probability of a refutation is obtained by normalizing with the sum of the probabilities of all refutations, and assigning 0 to derivations that are not refutations. Pure SLPs are ones in which every predicate `p/n` that has clauses is decorated with probabilities; impure SLPs admit predicates whose clauses do not have probability distributions.
 
 The connection is clear. Every pcc logic program over _discrete_ probability distributions `t1/p1+...+tk/pk` c
 can be thought of as an impure SLP as follows. Every goal `X~pd` is replaced by a call p(X) to a new predicate p/1 (p/1 does not occur anywhere else in the program) with the clauses:
@@ -101,12 +103,15 @@ An attractive aspect of this connection is that [1] works out the connections be
 
 We note the advantage of the pcc approach. pcc introduces probabilities orthogonally to clause selection. Hence there is no requirement that the probability distribution `pd` in `X ~ pd` be finite or discrete. Unfortunately, by tying probabilistic choice to clause selection, SLP commits to this special case. 
 
+Also of interest is the work of William Cohen and colleagues [2] on using a personalized page rank technique for computing with stochastic logic programs. We hope to establish deeper connections in future work.
+
 TODO: Relate the work on unnormalized SLP to pcc.
 
 TODO: Investigate applicability of parameter estimation techniques [1,Sec 4] to pcc.
 
 ## Bibliography
-[1] James Cussins "Parameter Estimation in Stochastic Logic Programs", Machine Learning, 44, 245-271, 2001.
+[1] James Cussens "Parameter Estimation in Stochastic Logic Programs", Machine Learning, 44, 245-271, 2001.
+[2] William Yang Wang, Kathryn Mazaitis and William W. Cohen, "ProPPR: Efficient First-Order Probabilistic Logic Programming for Structure Discovery, Parameter Learning, and Scalable Inference", AAAI 2014.
 ## Tested with SWI-Prolog.
 
 EXAMPLE TRACE
