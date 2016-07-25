@@ -103,7 +103,7 @@ An attractive aspect of this connection is that [1] works out the connections be
 
 We note the advantage of the pcc approach. pcc introduces probabilities orthogonally to clause selection. Hence there is no requirement that the probability distribution `pd` in `X ~ pd` be finite or discrete. Unfortunately, by tying probabilistic choice to clause selection, SLP commits to this special case. 
 
-Also of interest is the work of William Cohen and colleagues [2] on using a personalized page rank technique for computing with stochastic logic programs. We hope to establish deeper connections in future work.
+Also of interest is the work of William Cohen and colleagues [2,3] on using a personalized page rank technique for computing with stochastic logic programs. We hope to establish deeper connections in future work.
 
 TODO: Relate the work on unnormalized SLP to pcc.
 
@@ -111,7 +111,11 @@ TODO: Investigate applicability of parameter estimation techniques [1,Sec 4] to 
 
 ## Bibliography
 [1] James Cussens "Parameter Estimation in Stochastic Logic Programs", Machine Learning, 44, 245-271, 2001.
+
 [2] William Yang Wang, Kathryn Mazaitis and William W. Cohen, "ProPPR: Efficient First-Order Probabilistic Logic Programming for Structure Discovery, Parameter Learning, and Scalable Inference", AAAI 2014.
+
+[3] William Yang Wang, Kathryn Mazaitis and William W. Cohen, "Programming with Personalized PageRank: A Locally Groundable First-Order Probabilistic Logic", arXiv:1305.2254v1.
+
 ## Tested with SWI-Prolog.
 
 EXAMPLE TRACE
