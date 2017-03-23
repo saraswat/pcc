@@ -1,0 +1,204 @@
+\documentclass{article}
+
+
+\usepackage[final]{nips_2016} % produce camera-ready copy
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{listings}
+\usepackage{color}
+\newcommand{\Beta}{B}
+\newcommand{\alt}{\,|\,}
+\newcommand{\defeq}{\stackrel{{\scriptscriptstyle def}}{=}}
+\title{Notes on probability and statistics}
+\author{
+  Vijay Saraswat \\
+  IBM TJ Watson Research Center \\
+  Yorktown Heights, NY 10598\\
+  \texttt{vijay@saraswat.org} 
+}
+\begin{document}
+
+\lstset{ %
+  language=Prolog,
+  basicstyle=\footnotesize,
+  numbers=left,
+  numberstyle=\footnotesize,
+  stepnumber=1,
+  numbersep=5pt,
+  backgroundcolor=\color{white},
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  frame=single,
+  tabsize=2,
+  captionpos=b,
+  breakatwhitespace=false,
+  escapeinside={\%*}{*)}
+  framexleftmargin=15pt}
+
+\maketitle
+\begin{abstract}
+  Notes for myself around crucial elements of probability and statistics necessary for logic / knowledge representation researchers to understand.
+\end{abstract}
+
+\paragraph{Notes on LDA}
+
+We can describe the generative process for Hierarchical Dirichlet Allocation with the following probabilistic program. Given is the dictionary of words, a colletion of Docs, the number of topics (KK), and parameter vectors Alpha, Beta, and Chi.  
+
+\begin{lstlisting}
+/* Generative LDA model for 1 to M documents.*/
+lda(Words, Docs, K, Alpha, Beta, Chi) {
+  M = size(Docs),
+  V = size(Words),
+  for _K in 1..K
+     TopicWords(_K) | Alpha ~ Dirichlet(Alpha),
+
+  for D in 1..M {
+     DocTopics(D) | Beta ~ Dirichlet(Beta),
+     N(D) | Chi ~ Poisson(Chi),
+     for I in 1..N(D) {
+       Z(I) | Beta ~ DocTopics(D),
+       Doc(I) | Alpha, Beta, Chi ~ TopicWords(Z(I))
+     }
+  }
+}
+  
+\end{lstlisting}
+
+
+
+\section{PCC notes}
+
+\subsection{Probability}
+
+We start with the axiomatic approach.
+
+\begin{definition}[$\sigma$-algebra] Given a set $X$, a $\sigma$-algebra on $X$ is a collection $\Sigma$ of subsets of $X$ that includes the empty set and is closed under complements, and countable unions and intersections. $(X,\Sigma)$ is called a {\em measurable space}.
+\end{definition}
+
+\begin{definition}[Measure Space] For a set $X$, a measurable space $(X,\Sigma)$ over $X$, let $\mu$ be a function from $\Sigma$ to the extended reals satisfying:
+  \begin{enumerate}
+  \item $\mu(E) \geq 0$ for all $E \in \Sigma$.
+  \item $\mu(\emptyset)=0$.
+  \item For a countable collection $E_1, E_2, \ldots$ of disjoint sets in $\Sigma$, $\mu(\bigcup_i E_i)=\Sigma_i \mu(E_i)$
+  \end{enumerate}
+Then $(X,\Sigma,\mu)$ is a measure space.
+\end{definition}
+One can define many measure spaces over the reals. For instance, let $\Sigma$ be the set of all countable subsets of the reals, and let $\mu(E)$ return the sum of all numbers in $E$ if $E$ is non-empty, and $0$ otherwise. 
+
+\begin{definition}
+  Let $\Omega$ be a (not necessarily countable) space of {\em outcomes}. Let $S$ be the set of {\em measurable events} -- a measurable event is a subset of outcomes (corresponding to the occurrence of one of the outcomes). $S$ is required to contain $\emptyset$, $\Omega$ and be closed under union and complementation. 
+
+  Given a space $(\Omega, S)$, a {\em probability distribution} is a mapping $P:S \rightarrow \Re$ satisfying:
+  \begin{enumerate}
+  \item $P(\alpha) > 0$, for all $\alpha \in S$.
+  \item $P(\Omega)=1$.
+    \item $P(\alpha \cup \beta) = P(\alpha) + P(\beta)$ provided that $\alpha, \beta \in S$ are disjoint.
+  \end{enumerate}
+\end{definition}
+Note that the conditions on $S$ force that it is closed under countable intersections as well.
+
+The {\em frequentist} interpretation relies on the notion of an {\em experiment} with a defined outcome, that can be repeated independently and as aften as required. Under these conditions one can define th probability of an outcome as the ratio of the number of times the desired outcome occurs, with the total number $N$ of trials, as $N$ tends to infinity.
+
+An alternate intepretation of probability is {\em degree of belief}, e.g.{} about whether it is going to rain tomorrow.  A way to make this precise is to relate the degree of belief to bets that a person would be willing to make about the outcome. Assuming that the person is rational, hence willing to place only such bets as are not going to yield negative results for the person, it can be shown that the person's beliefs must satisfy the conditions for probability distributions laid out above.
+
+Next, consider the problem of revising one's belief about the probability of an event $\beta$, given the information that an event $\alpha$ has occurred. One can model this situation by focusing only on those states of the world in which $\alpha$ occurs, and, assuming it is non-empty, examining the proportion of those such states in which $\beta$ occurs. Thus the conditional probability, $P(\beta\alt \alpha)$ can be defined by:
+$$ P(\beta \alt \alpha) \defeq \frac{P(\beta \cap \alpha)}{P(\alpha)}$$
+\noindent (provided that $P(\alpha)\not= 0$). 
+
+One can look at this definition as asserting the {\em chain rule}:
+$$P(\alpha \cap \beta)=P(\beta \alt \alpha) P(\alpha)$$
+
+And it also immediately yields Bayes' Rule:
+
+$$ P(\alpha \alt \beta) = \frac{P(\beta \alt \alpha) P(\alpha)}{P(\beta)}$$
+
+
+\begin{definition}
+  Given a probability space $(\Omega, S)$, a random variable is a map in $\Omega \rightarrow E$, for $E$ a measurable space.
+\end{definition}
+
+\subsection{Probability distributions}
+Most of the material below  on pds is drawn from Wikipedia entries.
+
+\paragraph{Discrete probability distribution}
+A discrete probability distribution is defined for (a subset of) a countable domain and associates a non-negative value with each element of the domain s.t. the sum of all the associated values is $1$. 
+
+Typically, probability distributions are described in terms of a set of parameters.
+
+The {\em Bernoulli distribution} has a single parameter $p$. It takes on the value $1$ with probability $p$ and $0$ with probability $1-p$. It can be thought of as the probability distribution describing the throw of a biased coin. We shall use the notation $1/p+0/(1-p)$ to write such a distribution.
+
+The {\em categorical distribution} is the natural generalization of Bernoulli to $k$ outcomes (a $k$-sided die). It takes a vector of $k$ values and has an associated set of $k$ parameters (summing to $1$) that specify the probability of a variable taking on the corresponding value. We use the notation $x_1/p_1  + \ldots + x_k/p_k$ to describe the $k$ values $x_1, \ldots, x_k$, with probabilities $p_1, \ldots, p_k$.
+
+
+The {\em multinomial distribution} $f$ is obtained by throwing the same $k$-sided die $n$ times. Let the die return the value $v_i$ with probability $p_i$. Then the probability of the outcome that $n$ throws will return $v_i$ $x_i$ times (with $n=\Sigma_{i\in 1..n} x_i$) is given by:
+$$
+f(x_1, \ldots, x_k; n, p_1, \ldots, p_k) = \frac{n!}{(x_1!\ldots x_k!)}p_1^{x_1}\ldots p_k^{x_k}
+$$
+
+Recall that the gamma function is defined for real argument values by $\Gamma(x)=(x-1)!$. Then the value can also be written as:
+$$ f(x_1, \ldots, x_k; n, p_1, \ldots, p_k)
+    = \frac{\Gamma(1+\Sigma_i x_i)}{\Pi_i \Gamma(1+x_i)}\Pi_{i=1}^k p_i^{x_i}$$
+
+
+\paragraph{Continuous probability distributions} 
+A continuous pd specifies the probability of variables that may take on an uncountable number of values, e.g. the reals in $[0,1]$. 
+
+Continuous pds can be specified by {\em probability density functions} (pdf): functions whose value at any given point in the same space provides the relative likelihood of the random variable taking that value. A pdf can be integrated to obtain the probability of a random variable over an interval:
+$$Pr(X : a \leq X \leq b) = \int_a^b f_X(x) dx$$
+
+\noindent where $f_X(\_)$ is the pdf for $X$.
+
+
+The {\em beta distribution} takes two parameters $\alpha$, $\beta$, and is defined over the closed unit interval $[0,1]$. It is of use in situations where the random variable can only take values in a bounded interval, e.g.{} the variable represents the proportion of some physical quantity in a sample. It has pdf: 
+$$ f_X(x; \alpha, \beta) = \frac{1}{k} x^{\alpha-1}(1-x)^{\beta-1}$$
+
+The constant $k$ is determined by the requirements of pdfs that the integral over the interval of definition should total 1:
+$$ \int_0^1 u^{\alpha-1}(1-u)^{\beta -1} du  = \frac{\Gamma(\alpha)\Gamma(\beta)}{\Gamma(\alpha+\beta)} = \Beta(\alpha,\beta)$$
+
+It is the conjugate prior to the Bernoulli, and binomial distributions.
+
+
+The {\em Dirichlet distribution} is the multivariate version of the beta distribution, parametrized by a vector $\alpha$ of positive real numbers, with pdf:
+$$f(x_1, \ldots, x_k; \alpha_1, \ldots, \alpha_k)
+  = \frac{\Gamma(\Sigma_{i=1}^k \alpha_i)}{\Pi_{i=1}^k \Gamma(\alpha_i)} \Pi_{i=1}^k x_i^{\alpha_i -1}$$
+
+for $x_i$ non-negative and summing to $1$, and $0$ elsewhere. Thus the {\em support} of the Dirichlet\footnote{The points in the domain mapped to non-zero values} is the set of discrete probability distributions over $k$ outcomes (aka the {\em $k-1$ simplex}).
+
+For the {\em symmetric} Dirichlet, all the $\alpha_i$ have the same value; the pdf can be written as:
+$$f(x_1, \ldots, x_k; \alpha) = \frac{\Gamma(k\alpha)}{\Gamma(\alpha)^k} \Pi_{i=1}^k x_i^{\alpha -1}$$
+
+\paragraph{Conjugate distributions}
+
+The Dirichlet distribution is conjugate to the multinomial.
+
+
+\appendix
+
+\section{Some definitions}
+
+Discrete exponential family distributions are of the form
+$$f_X(x \alt \theta) = h(x) exp(\eta(\theta) \circ T(x) - A(\theta))$$a
+for given functions $T(\_), h(\_), \eta(_), A(\_)$. Here $\theta$ is the parameter of the family.
+
+The {\em likelihood} of a parameter value $\theta$, given outcomes $x$ for r.v. $X$ is the probability of those outcomes given the parameter values, viewed as a function of $\theta$:
+${\cal L}(\theta \alt x) \defeq p_{\theta}(X=x)$. 
+
+{\em Independent and identicall distributed} (iid) sequence of random variables.
+
+A weaker assumption is {\em exchangeability}. A finite or infinite sequence $X_1, X_2, \ldots$ of random variables is said to be exchangeable if its joint probability distribution is invariant under finite permutations.
+
+Frequentist and Bayesian interpretation
+
+de Finetti's theorem.
+
+
+$\chi^2$ test
+
+\end{document}
