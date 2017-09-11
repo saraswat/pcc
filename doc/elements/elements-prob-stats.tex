@@ -1,0 +1,446 @@
+\documentclass{article}
+
+
+\usepackage[final]{nips_2016} % produce camera-ready copy
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{natbib}
+\usepackage{amsmath}   % vj: best to load this for math
+% use \mathrm{...} for text in math mode.
+
+\usepackage{amsthm} % vj: provides \begin{proof}...\end{proof}!
+
+\usepackage{listings}
+\usepackage{color}
+\newcommand{\Beta}{B}
+\newcommand{\alt}{\,|\,}
+\newcommand{\defeq}{\stackrel{{\scriptscriptstyle def}}{=}}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{convention}{Convention}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{digression}[theorem]{Digression}
+
+\newtheorem*{remark}{Remark}
+\newtheorem*{example}{Example}
+\newtheorem*{CHECK}{{\sc Check}}
+\newtheorem*{todo}{{\sc Todo}}
+\newcommand{\mymathhyphen}{{\hbox{-}}}
+
+
+\title{Working Notes on Probability and Statistics}
+\author{
+  Vijay Saraswat \\
+  IBM TJ Watson Research Center \\
+  Yorktown Heights, NY 10598\\
+  \texttt{vijay@saraswat.org} 
+}
+\begin{document}
+
+\lstset{ %
+  language=Prolog,
+  basicstyle=\footnotesize,
+%  numbers=left,
+  numberstyle=\footnotesize,
+  stepnumber=1,
+  numbersep=5pt,
+  backgroundcolor=\color{white},
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  frame=single,
+  tabsize=2,
+  captionpos=b,
+  breakatwhitespace=false,
+  escapeinside={\%*}{*)}
+}
+  % framexleftmargin=15pt}
+
+\maketitle
+\begin{abstract}
+  Notes for myself around crucial elements of probability and statistics necessary for logic / knowledge representation researchers to understand. 
+\end{abstract}
+
+
+
+
+
+
+\section{PCC notes}
+
+There is no original material in this note. Most of the content is drawn from Wikipedia articles, \cite{lawler} and \cite{pgm-book}. We focus on gathering in one place the material on mathematical foundations of the modern approach to probabilities. Note the complexity of the theory -- the need to delve into measurable spaces and metric spaces --  arises from the desire to work with continuous random variables; the theory of discrete random variables is straightforward.
+
+\subsection{Probability}
+
+We start with the axiomatic approach.
+
+\subsection{\(\sigma\)-algebras}
+\begin{definition}[\(\sigma\)-algebra] Given a set \(X\), a \(\sigma\)-algebra on \(X\) is a collection \(\Sigma\) of subsets of \(X\) that includes the empty set and is closed under complements (wrt \(X\)), and countable unions. \((X,\Sigma)\) is called a {\em measurable space}.
+\end{definition}
+The conditions imply that \(\Sigma\) is closed under countable intersection, using De Morgan's laws. \(\sigma\)-algebras specialize {\em set-algebras} in demanding closure under countable, rather than finite, unions. 
+
+There are several motivations for \(\sigma\)-algebras. One would like a notion of ``size'' for sets. Clearly, the size of the empty set should be zero and the size of the countable union of disjoint sets should be the sum of their sizes. A key problem is apparently that the Axion of Choice causes problems with an attempt to specify a size for {\em every} set of reals (under the usual notion of length for subsets of the real line), see Vitali sets.
+
+\begin{CHECK}
+  Delve into this. Similar to the need to reduce the function space when looking to find spaces \(D\) s.t. \(D \sim (D \rightarrow D)\)? Check {\em non-measurable sets}.
+
+  A Vitali set is a subset of \([0,1]\) such that for each real number \(r\) there is exactly one number \(v\in V\) such that \(v-r\) is a rational number. Their existence needs the Axiom of Choice.
+\end{CHECK}
+
+So we look to identify a smaller collection of sets for which the measure should be definable. Clearly \(\emptyset\) should be in it, and it should be closed under countable unions of disjoint sets. The only other requirement is that the collection of sets should be closed under complementation (with the universal set, \(X\)).
+
+\begin{CHECK}
+Why is this natural? Because you want to consider the entire set \(X\) measurable? Then if a subset \(Y\) is measurable, its complement should be measurable too, which will give the nice property that the size of the complement is the size of \(X\) less the size of \(Y\).
+\end{CHECK}
+
+A second motivation is the requirement that we should be able to take limits of sequences of sets, and this forces us to consider closure under countable unions and intersections. For instance for a sequence \(A_1, A_2, \ldots, \) of subsets of \(X\) we would like to define
+
+\[ \lim_{n \to \infty} \sup{} A_n \defeq \bigcap_{n=1}^{\infty} \bigcup_{m=n}^{\infty} A_m
+\]
+
+\noindent and correspondingly  limit infimums.
+
+Third, in probability theory, we are often concerned with taking conditional probabilities. These require working with subsets of the \(\sigma\)-algebra that are themselves \(\sigma\)-algebras. Having countable unions provides additional expressive power as this example shows. Consider the sample space of infinite number of coin tosses, \(\Omega=\{(x_1,x_2,\ldots)\alt x_i \in \{0,1\}, i \geq 1\}\). Now we want to consider situations in which \(n\) tosses have already been made. This can be characterized by the \(\sigma\)-algebra \({\cal F}_n = \{A \times \Omega \alt A \subseteq \{0,1\}^n\}\). Clearly \({\cal F}_1 \subset {\cal F}_2 \subset \ldots\), and we would like their limit to be a \(\sigma\)-algebra as well.
+
+A crucial tool for reasoning about \(\sigma\)-algebras is the Dynkin \(\pi\mymathhyphen{}\lambda\) theorem. Given a set \(X\), a {\em \(\pi\)-system} is a collection \(P\) of subsets of \(X\) closed under finite intersections. A {\em Dynkin system} (\(\lambda\)-system) \(D\) is a collection of subsets of \(X\) containing \(X\) and closed under complements and countable unions of disjoint subsets.
+
+The theorem says that if \(D\) contains \(P\) then it contains \(\sigma(P)\), the \(\sigma\)-algebra generated by \(P\).
+
+\begin{example}
+  Given a set \(X\), \(\{\emptyset, X\}\) is a \(\sigma\)-algebra. So is \(2^X\), the set of all subsets of \(X\).
+\end{example}
+
+\begin{definition}[Lebesgue measure]
+  Let the length \(l(I)\) of an interval \(I\) of the reals with lower-bound \(a\) and upper-bound \(b\) be \(b-a\). The interval can be closed or open on either end. The {\em Lebesgue outer measure}, \(\lambda^{\star}(E)\) is defined for \(E\subseteq \Re\) by:
+  \[ \inf{} \{\Sigma_{k=1}^{\infty} l(I_k) : E \subseteq \cup_{k=1}^{\infty} I_k, (I_k)_{k \in \mathbb{N}}\ \mbox{sequence of open intervals}\}\]    
+\end{definition}
+
+Suppose \(S\) is a countable subset of the reals, e.g.{} the set of rational numbers. Then \(\lambda^{\star}(S)=0\), since the sequence of open intervals \(I_1=(x_1,x_1), I_2=(x_2,x_2), \ldots\) (for \(x_1,x_2,\ldots\) an enumeration of \(S\)) covers \(S\), but \(l(I_j)=0\), for all \(j\).
+
+\begin{definition}[Lebesgue \(\sigma\)-algebra]
+  The {\em Lebesgue \(\sigma\)-algebra} is the collection of all sets \(E \subseteq \Re\) satisfying the condition that for every \(A\subseteq \Re\):
+  \[ \lambda^{\star}(A) = \lambda^{\star}(A\cap E) + \lambda^{\star}(A \cap E^c)\]    
+
+  On every such \(E\) the {\em Lebesgue measure} \(\lambda(E)\) is just \(\lambda^{\star}(E)\).
+\end{definition}
+\begin{CHECK}
+  Work out that this is closed under countable unions. This probably involves Carath\'{e}odory's theorem and needs the Axiom of Choice.
+\end{CHECK}  
+
+\begin{proposition}
+Vitali sets are not measurable by the Lebesgue measure.   
+\end{proposition}
+
+
+The Cantor set (see below) is an example of an uncountable set of reals which has a measure, and its measure is \(0\). 
+
+\subsection{Measure spaces}
+\begin{definition}[Measure Space] For a set \(X\), a measurable space \((X,\Sigma)\) over \(X\), let \(\mu\) be a function from \(\Sigma\) to the extended reals satisfying:
+  \begin{enumerate}
+  \item \(\mu(E) \geq 0\) for all \(E \in \Sigma\).
+  \item \(\mu(\emptyset)=0\).
+  \item \(\mu\) is \(\sigma\)-additive: for every countable collection \(E_1, E_2, \ldots\) of disjoint sets in \(\Sigma\), \(\mu(\bigcup_i E_i)=\Sigma_i \mu(E_i)\)
+  \end{enumerate}
+Then \((X,\Sigma,\mu)\) is a measure space.
+\end{definition}
+
+\begin{proposition}
+  The reals form a measure space with the Lebesgue \(\sigma\)-algebra and the Lebesgue measure.   
+\end{proposition}
+
+
+A measure \(\mu\) over a measurable space \((X,\Sigma)\)is {\em finite} if \(\mu(x)\) is finite for all \(E\in \Sigma\). It is {\em \(\sigma\)-finite} if \(X\) is the countable union of measurable sets with finite measure.
+
+The Lebesgue measure on the reals is \(\sigma\)-finite, but not finite. (The reals can be covered by the measurable sets \([k,k+1)\), for integers \(k\), with measure \(1\).)
+
+  A measure space is {\em complete} if every subset of a null set (measurable set with measure \(0\)) is measurable. (It will have measure \(0\).)
+  \begin{digression}
+    Why is completeness important? Because it shows up even in simple situations, such as the tensor product of measure spaces. Consider the Lebesgue measure space \((\Re, L, \lambda)\). To construct the two-dimensional space on \(\Re^2\), it might make sense to consider the \(\sigma\)-algebra to be \(L\otimes L\). But this is not complete. Evey singleton set has measure \(0\), hence \(\lambda^2(\{0\}\times A)=\lambda(\{0\}) \lambda(A)=0\), for any \(A \in L\), hence for \(A=\Re\). Now choose \(A\) to be the Vitali set, so that \(\lambda(A)\not\in L\), hence \(\{0\}\times A \not\in L\), and the constructed measure space is not complete.
+  \end{digression}
+
+The Lebesgue measure space over the reals is complete.
+  
+%vj: need to get this right. One can define many measure spaces over the reals. For instance, let \(\Sigma\) be the set of all subsets of the reals which are empty or contain their infimum and supremum, and let \(\mu(E)\) return the difference between the supremum and infimum if \(E\) is non-empty, and \(0\) otherwise. 
+
+\begin{definition}[Measurable function]
+  A function between two measurable spaces is measurable if the preimage of every measurable set is measurable. That is, \(f:(X,\Sigma) \rightarrow (X',\Sigma')\) is measurable if \(f^{-1}(E)\defeq \{x\alt f(x)\in E\} \in \Sigma\) for every \(E\in\Sigma'\).
+\end{definition}
+
+The collection of measurable spaces forms a category with measurable functions as morphisms.
+
+\begin{proposition}
+The sum and product of two real-valued measurable functions is measurable. The pointwise supremum, infimum, limit superior and limit inferior of a sequence of real-valued measurable functions are measurable.
+\end{proposition}
+
+Any non-measurable set \(Y \subset X\) can be used to generate a non-measurable function \(f:(X,\Sigma)\rightarrow (\Re, {\cal B})\), for \({\cal B}\) the Borel algebra on \(\cal R\) (through its indicator function). (See below for the definition of Borel algebra.)
+
+The Lebesgue integral plays an important role in probability theory, by serving to generalize the intuitive idea of integration as ``finding the area under the curve'' to much more complex classes of functions. Let \(f:\Re \rightarrow \Re^+\) be a non-negative real-valued function. The {\em Reimann integral} generalizes the idea of finding the area by fitting columns of small width under the function \(f\), but fails to be well-defined for certain functions (e.g. \(\lambda x.\, x^{-2}\) since it has unbounded range). The Lebesgue integral instead uses the idea of fitting thin rows (strips) under the curve, that is, partitioning the range of \(f\). The area is \(f^{\star}(t)=\mu(\{x \alt f(x) > t\}) {\mathrm dt}\).  The Lebesgue integral is then defined as \(\int_0^{\infty} f^{\star}(t){\mathrm dt}\) which is a well-defined improper Riemann integral since \(f^{\star}\) is a non-negative decreasing function. 
+
+\subsection{Metric spaces}
+
+\begin{definition}[Metric Space] A {\em metric space} \((M,d)\) is a set \(M\) with a metric \(d:M \times M \rightarrow \Re\) satisfying (a)~\(d(x,y)=0\) iff \(x=y\), (b)~ \(d\) is symmetric, (c)~\(d\) satisfies the triangle inequality: \(d(x,z) \leq d(x,y)+d(y,z)\), for any \(x,y,z\in M\).
+
+  The metric space is {\em complete} if every Cauchy sequence of points in \(M\) has a limit that is also in \(M\). (A Cauchy sequence in \(M\) is a sequence of elements of \(M\) which is such that for any given real number \(\epsilon > 0\) there are only finitely many elements \(x,y\) in the sequence such that \(d(x,y) \geq \epsilon\).)
+\end{definition}
+
+\((\Re, \lambda x,y.\, |x-y|)\) is a complete metric space. So is Euclidean \(n\)-space with Euclidean distance as metric.
+
+Every metric space \(M\) is a topological space, with base given by {\em open balls} of radius \(r > 0\) (for \(r\) a real number), i.e. the set \(\{m \in M \alt d(m,x) < r\}\) for every \(x\in M\).
+
+A {\em neighborhood} of a point \(p\) in a topological space is any superset of an open set containing \(p\).
+
+In a topological space \(S\), a {\em cover} for \(X \subseteq S\) is a collection \(U\) of subsets of \(S\) whose union is a superset of \(X\). A sub-cover of \(U\) is a subset of \(U\) that still covers \(X\). The cover is {\em open} if it consists of open sets.  \(S\) is said to be {\em compact} if each of its covers has a finite sub-cover. It is said to be {\em locally compact} if every point has a compact neighborhood.
+
+A topological space is said to be {\em Hausdorff} if distinct points have disjoint neighborhoods. This condition implies uniqueness of limits of sequences.
+
+The reals, with the topology given above, are locally compact and Hausdorff.
+
+In a topological space \(X\), a {\em Borel set} is any set that can be formed from open sets through countable unions, intersections or relative complementation. The set of all Borel sets forms a \(\sigma\)-algebra, the {\em Borel algebra}, \({\cal B}\). This is the smallest algebra containing all open sets. Borel sets are important in measure theory since any measure defined on open sets of a space must be defined on Borel sets of that space.
+
+A {\em Borel measure} on a topological space is any measure defined on the Borel algebra of the space. Over the reals, the measure \(\mu\) which assigns to every half-open interval \((a,b]\) the measure \(b-a\) is called {\em the} Borel measure.
+
+\begin{proposition}
+The Borel measure space on the reals is not complete.  
+\end{proposition}
+
+\begin{proof}
+To see this, consider the Cantor set (e.g.{} obtained by deleting the middle third of intervals, recursively, countably many times, starting with the unit interval \([0,1]\)). The Cantor set is a Borel set. It has measure zero.\footnote{To see this, consider the sequence of sequences of open intervals defined as follows. The first sequence is \((0,1/3),(2/3,1)\). This covers the Cantor set, and its measure is \(2/3\). Now consider the sequence at the second step of the iteration \((0,1/9),(2/9,1/9), (6/9,7/9),(8/9,9/9)\). It has measure \(4/9\). The \(n\)th such sequence has measure \((2/3)^n\). The inf of this set is \(0\).} It is uncountable. Its power set, therefore, has cardinality strictly greater than the reals. Therefore it has some subset which is not a Borel set.
+\end{proof}
+
+A (possibly incomplete) measure space \((X,\Sigma,\mu)\) can be converted uniformly into a complete measure space \((X,\Sigma_0,\mu_0)\); the smallest such \(\sigma\)-space is said to be its {\em completion}.
+
+\begin{proposition}
+  The completion of the Borel measure space is the Lebesgue measure space.  
+\end{proposition}
+
+
+Let \((X,T)\) be a Hausdorff space, and \(\Sigma\) be a \(\sigma\)-algebra on \(X\) that contains the topology \(T\), so every open set is measurable. A measure \(\mu\) on \(\Sigma\) is {\em locally finite} iff for every point \(p\) of the space \(X\), there is an open neighborhood \(N_p\) of \(p\) s.t. \(\mu(N_p)\) is finite. It is said to be {\em inner regular} if every \(E\in \Sigma\) can be approximated from within by compact sets. That is:
+\[ \mu(E) = {\mathrm sup}\{\mu(K)\alt K \subseteq E, K {\mathrm compact}\}\]
+
+A measure that is locally finite and inner regular is said to be a {\em Radon measure}.
+
+\begin{proposition}
+  The Lebesgue measure is a Radon measure.
+\end{proposition}
+
+
+\subsection{Probability spaces}
+
+\begin{definition}[Probability Space] 
+  A {\em probability space} is a measure space \((\Omega, S, P)\) with total measure \(1\) (i.e.{} \(p(\Omega)=1\)). It is said to be {\em discrete} if \(\Omega\) is finite or countably infinite, otherwise it is {\em continuous}.
+\end{definition}
+\(\Omega\) is thought of as a space of {\em outcomes}, and \(S\) as a set of (measurable) {\em events}, representing the disjunction of the contained outcomes. \(P\) is said to be the {\em probability measure} of the space, and we say ``probability of \(E\)'' for \(P(E)\).
+
+Any probability space is locally finite because the whole space is assigned a finite measure (\(1\)). Often we require probability spaces to be complete in the sense discussed above.
+
+\begin{convention}\label{convention:discrete-ps}
+For a discrete probability space, \(S\) is usually chosen as the powerset \(2^{\Omega}\), and the probability measure \(p\) can be uniquely defined by extending a function \(p:\Omega\rightarrow [0,1]\) satisfying \(1=\Sigma_{\omega \in \Omega} f(\omega)\) to \(S\), via \(p(E)=\Sigma_{\omega \in E} p(\omega)\).  Hence we will present a discrete probability space by specifying just the pair \((\Omega, p:\Omega \rightarrow [0,1])\).
+\end{convention}
+
+
+\begin{example}
+  The probability space associated with an infinite sequence of coin tosses is: (\(0\) is ``heads'', and \(1\) ``tails'')
+  \[ \Omega = \{(\omega_1, \omega_2, \ldots) \alt \omega_i \in \{0,1\}\}\]
+
+  For each positive integer \(n\), let \(\Omega_n\) be the finite set with \(2^n\) elements given by:
+  \[\Omega_n=\{(\omega_1, \ldots, \omega_n)\alt \omega_i \in \{0,1\}\}\]
+
+  Clearly, \((\Omega_n, 2^{\Omega_n},p_n=\lambda x:\Omega_n.2^{-n})\) is a probability space (where we utilize the convention above and define the probability measure only on \(\Omega_n\)).
+
+  Going back to an earlier example, let consider situations in which \(n\) tosses have already been made. Define the  \(\sigma\)-algebra \({\cal F}_n= \{A\times \Omega \alt A \subseteq \{0,1\}^n\}\).  Clearly, \({\cal F}_n\) is a finite \(\sigma\)-algebra with cardinality \(2^{2^n}\) and  \({\cal F}_j \subset {\cal F}_{j+1}\), for all \(j\). Define \({\cal F}^0=\bigcup_j {\cal F}_j\) and \(p(A\times \Omega)= p_n(A)\).
+
+  Interestingly, \({\cal F}^0\) is an algebra (closed under finite unions) but not a \(\sigma\)-algebra. (The set \(\{(1,1,\ldots)\}\) is not in \({\cal F}^0\) but can be witten as a countable intersection of the sets \({\bf 1}_j \times \Omega\in {\cal F}^0\), where \({\bf 1}_j = \{(\omega_1,\ldots, \omega_j)\alt \omega_1=\omega_2\ldots=\omega_j=1\}\).) The Carath\'{e}odory Extension theorem can be applied here to produce a complete measure space containing  ${\cal F}^0$, as laid out in \cite{lawler}.
+\end{example}
+
+The {\em frequentist} interpretation relies on the notion of an {\em experiment} with a defined outcome, that can be repeated independently and as aften as required. Under these conditions one can define th probability of an outcome as the ratio of the number of times the desired outcome occurs, with the total number \(N\) of trials, as \(N\) tends to infinity.
+
+An alternate intepretation of probability is {\em degree of belief}, e.g.{} about whether it is going to rain tomorrow.  A way to make this precise is to relate the degree of belief to bets that a person would be willing to make about the outcome. Assuming that the person is rational, hence willing to place only such bets as are not going to yield negative results for the person, it can be shown that the person's beliefs must satisfy the conditions for probability distributions laid out above.
+
+\begin{CHECK}
+  Check this.
+\end{CHECK}
+
+Next, consider the problem of revising one's belief about the probability of an event \(\beta\), given the information that an event \(\alpha\) has occurred. One can model this situation by focusing only on those states of the world in which \(\alpha\) occurs, and, assuming it is non-empty, examining the proportion of those such states in which \(\beta\) occurs. Thus the conditional probability, \(P(\beta\alt \alpha)\) can be defined by:
+\[ P(\beta \alt \alpha) \defeq \frac{P(\beta \cap \alpha)}{P(\alpha)}
+\]
+\noindent (provided that \(P(\alpha)\not= 0\)). 
+
+One can look at this definition as asserting the {\em chain rule}:
+\[
+P(\alpha \cap \beta)=P(\beta \alt \alpha) P(\alpha)
+\]
+
+And it also immediately yields Bayes' Rule:
+
+\[ P(\alpha \alt \beta) = \frac{P(\beta \alt \alpha) P(\alpha)}{P(\beta)}
+\]
+
+
+\begin{definition}[Random Variable]
+  Given a probability space \((\Omega, S, p)\), a random variable is a measurable map \(X:(\Omega,S) \rightarrow (\Omega', S')\), for \((\Omega', S')\) a measurable space. It induces a probability measure on \(S'\) by \(p_X(E)=p(X^{-1}(E))\), yielding the probability space \((\Omega',S', p_X)\). \(p_X\) is said to be the {\em probability distribution} of the random variable.
+\end{definition}
+Note that the probability distribution of the random variable no longer directly references the source probability space \((\Omega, S, p)\).
+
+Observing that the identity map \(\lambda x : \Omega.\,x\) in \((\Omega,S)\rightarrow (\Omega,S)\) is a
+measurable map, we get:
+
+\begin{proposition}
+  For any probability space \((\Omega, S, p)\), \(p\) is the probability distribution of a random variable.
+\end{proposition}
+
+
+Often the target measurable space is taken to be the space over the reals with the Borel algebra, \((\Re,{\cal B})\).
+
+If \(p_X\) maps a countable set \(E \in S'\) to \(1\) then \(X\) is said to be a {\em discrete random variable}. If \(p_X\) maps every singleton set (and, hence, every countable set) in \(S'\) to \(0\) then \(X\) is said to be a {\em continuous random variable}.
+
+Clearly, all random variables defined on a discrete probability space are discrete.
+
+\begin{proposition}
+Every random variable can be represented as the sum of a discrete random variable and a continuous random variable .
+\end{proposition}
+
+When the range of the random variable is the reals, the probability distribution is sometimes given in terms of the {\em cumulative distribution function}:
+   \[ F_X(x) = p_X((-\infty, x])\]
+
+This function \(F_X\) is non-decreasing, and right continuous. \(F_X(x)\) takes on the value \(0\) in the limit as \(x\) tends to \(-\infty\), and \(1\) as \(x\) tends to \(\infty\).
+
+\begin{proposition}
+  Any function satisfying the four properties above can be the distribution function of a random variable.
+\end{proposition}
+
+The probability distribution for the random variable, \(p_X\), can be recovered from the cumulative distribution function \(F_X\) by setting \(p_X(y)\) to \(F_X(y)\) for \(y\) the  open sets \((-\infty,x]\), and then extending uniquely to the Borel sets. 
+
+\subsubsection{Probability density functions}
+
+
+For some continuous random variables \(X\) over the reals, there exists a function \(f_X:\Re \rightarrow [0,\infty)\) s.t.
+    \[p_X([a,b]) = \int_a^b f_X(x) \mathit{dx}\]
+
+    Such a function (the {\em probability density function}, pdf) is the {\em Radon-Nikodym derivative} wrt the Lebesge measure. If it exists, then
+    \[F_X(x) = \int_{\infty}^x f_X(t) \mathit{dt}\]
+
+    If \(f_X\) is continuous at \(t\) then \(f_X(t)=F_X'(t)\). It also satisfies \(1=\int_{\infty}^{\infty} f(x)\mathrm{dx}\). Conversely, any nonnegative function integrating to \(1\) is the density of a random variable.
+
+%Note that every probability measure \(\mu\) on \((\Re,{\cal B})\) is the probability distribution of the random variable \(X\) defined on the probability space \((\Re,{\cal B},\mu)\) by \(X=x\). That is, \(\mu_X=\mu\). 
+
+    %% NEed to talk about Radon-Nikodym derivative.
+    
+    
+\subsubsection{Example probability distributions}
+Below we shall follow Convention~\ref{convention:discrete-ps} for describing discrete probability distributions. By \({\bf k}\) we shall mean the set \(\{0,1,\ldots, k-1\}\). 
+
+
+The {\em categorical distribution} has \(k\) outcomes. It takes as parameter a unit \(k\)-vector \(p\), and is defined by \(({\bf k}, \lambda x:{\bf k}.p_x)\), where we use the notation \(p_x\) to select the \(x\)'th component of the vector \(p\). We can think of it as corresponding to the probability of a specific outcome when throwing a die with \(k\) faces. The categorical distribution over {\bf 2} is called the {\em Bernoulli} distribution. 
+
+
+The {\em multinomial distribution} \(f\) is obtained by throwing the same \(k\)-sided die \(n\) times. Recall that the number of ways of choosing \(x=(x_0, \ldots, x_{k-1})\) values (totalling \(n\)) out of \(n\) is \(\binom{n}{x_0,\ldots,x_{k-1}}=\frac{n!}{\Pi_i x_i!}\). The probability of one such selection is \(\Pi_i p_i^{x_i}\). Thus the distribution is
+\[ (\Omega=\{x \alt x_i \geq 0, \Sigma_i x_i = n\},
+   \lambda x:\Omega.\, \frac{n!}{\Pi_i x_i!}\Pi_i p_i^{x_i})\]
+
+Recall that the gamma function is defined for real argument values by \(\Gamma(x)=(x-1)!\). Then the probability measure can also be written as:
+\[ f(x; n, p) = \frac{\Gamma(1+\Sigma_i x_i)}{\Pi_i \Gamma(1+x_i)}\Pi_i p_i^{x_i}
+\]
+
+
+The {\em beta distribution} takes two parameters \(\alpha\), \(\beta\), and is defined over the closed unit interval \([0,1]\). It is of use in situations where the random variable can only take values in a bounded interval, e.g.{} the variable represents the proportion of some physical quantity in a sample. It has pdf: 
+\[ f_X(x; \alpha, \beta) = \frac{1}{k} x^{\alpha-1}(1-x)^{\beta-1}\]
+
+The constant \(k\) is determined by the requirements of pdfs that the integral over the interval of definition should total 1:
+\[ \int_0^1 u^{\alpha-1}(1-u)^{\beta -1} du  = \frac{\Gamma(\alpha)\Gamma(\beta)}{\Gamma(\alpha+\beta)} = \Beta(\alpha,\beta)\]
+\noindent where \(\Beta\) is the beta-function. 
+It is the conjugate prior to the Bernoulli, and binomial distributions.
+
+
+The {\em Dirichlet distribution} is the multivariate version of the beta distribution, parametrized by a vector \(\alpha\) of positive real numbers, with pdf:
+\[f(x_1, \ldots, x_k; \alpha_1, \ldots, \alpha_k)
+  = \frac{\Gamma(\Sigma_{i=1}^k \alpha_i)}{\Pi_{i=1}^k \Gamma(\alpha_i)} \Pi_{i=1}^k x_i^{\alpha_i -1}\]
+
+for \(x_i\) non-negative and summing to \(1\), and \(0\) elsewhere. Thus the {\em support} of the Dirichlet\footnote{The points in the domain mapped to non-zero values} is the set of discrete probability distributions over \(k\) outcomes (aka the {\em \(k-1\) simplex}).
+
+For the {\em symmetric} Dirichlet, all the \(\alpha_i\) have the same value; the pdf can be written as:
+\[f(x_1, \ldots, x_k; \alpha) = \frac{\Gamma(k\alpha)}{\Gamma(\alpha)^k} \Pi_{i=1}^k x_i^{\alpha -1}\]
+
+\paragraph{Conjugate distributions}
+
+The Dirichlet distribution is conjugate to the multinomial.
+
+\subsection{Expectations and moments}
+
+\section{Probabilistic Programming}
+\paragraph{Notes on LDA}
+
+We can describe the generative process for Hierarchical Dirichlet Allocation with the following probabilistic program. Given is the dictionary of words, a colletion of Docs, the number of topics (\(KK\)), and parameter vectors \(Alpha\), \(Beta\), and \(Chi\).  
+
+\begin{lstlisting}
+/* Generative LDA model for 1 to M documents.*/
+lda(Words, Docs, K, Alpha, Beta, Chi) {
+  M = size(Docs),
+  V = size(Words),
+  for _K in 1..K
+     TopicWords(_K) | Alpha ~ Dirichlet(Alpha),
+
+  for D in 1..M {
+     DocTopics(D) | Beta ~ Dirichlet(Beta),
+     N(D) | Chi ~ Poisson(Chi),
+     for I in 1..N(D) {
+       Z(I) | Beta ~ DocTopics(D),
+       Doc(I) | Alpha, Beta, Chi ~ TopicWords(Z(I))
+     }
+  }
+}
+  
+\end{lstlisting}
+
+\bibliographystyle{abbrvnat}
+\setcitestyle{authoryear,open={((},close={))}}
+\bibliography{bib}
+
+\appendix
+
+\section{Some definitions}
+
+Discrete exponential family distributions are of the form
+\[f_X(x \alt \theta) = h(x) exp(\eta(\theta) \circ T(x) - A(\theta))\]
+
+\noindent for given functions \(T(\_), h(\_), \eta(_), A(\_)\). Here \(\theta\) is the parameter of the family.
+
+The {\em likelihood} of a parameter value \(\theta\), given outcomes \(x\) for r.v. \(X\) is the probability of those outcomes given the parameter values, viewed as a function of \(\theta\):
+\({\cal L}(\theta \alt x) \defeq p_{\theta}(X=x)\). 
+
+{\em Independent and identicall distributed} (iid) sequence of random variables.
+
+A weaker assumption is {\em exchangeability}. A finite or infinite sequence \(X_1, X_2, \ldots\) of random variables is said to be exchangeable if its joint probability distribution is invariant under finite permutations.
+
+Frequentist and Bayesian interpretation
+
+de Finetti's theorem.
+
+
+\(\chi^2\) test
+
+Radon-Nikodym theorem
+
+%(Wikipedia entry)
+sufficient statistic 
+
+correlation between random variables
+
+Pearson product-moment correlation coefficient
+
+
+
+\end{document}
+
+Bayesian, Random Forest, CART modeling, Contextual Bandit etc

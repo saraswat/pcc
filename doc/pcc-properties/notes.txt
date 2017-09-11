@@ -1,0 +1,26 @@
+Thu Sep 07 19:01:18 EDT 2017
+
+The basic idea is that the pcc program p(Param, Obs) defines a probabilistic model over latent variables Param and observables Obs.
+
+The program satisfies the property that with concrete values for the variables in Param it will generate a posterior probability distribution (pd) over Obs (which can be sampled).
+
+Also it fits within the framework for Bayesian learning. (We need to show how.)
+
+{Establish connection between pcc program P and a machine learning "model".}
+
+Need to make the point that we use logic for describing computations, and we have denotational models, but we are not tied to interpretation over sets.
+
+Framework for Bayesian learning using pcc.
+You have to identify a pcc program P, and also model parameters, and then the a priori distribution over them.
+Then you have to provide the observed data.
+
+
+Note this is different from the earlier approach, and the approach in Prism which is based on most likely models. 
+
+
+
+Xbar and observable variables Ybar.
+
+The program satisfies the propery
+
+Generally, observations will be provided over Ybar.
