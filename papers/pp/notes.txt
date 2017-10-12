@@ -1,0 +1,11 @@
+Fri May 12 09:58:04 EDT 2017
+
+Edward runtime. Statistical inference techniques:
+
+  1. Danilo J Rezende, Shakir Mohamed, and Daan Wierstra. Stochastic backpropagation and approx- imate inference in deep generative models. In International Conference on Machine Learning, 2014.
+  2. Diederik P. Kingma and Max Welling. Auton-encoding Variational Bayes. ICLR 2015.
+  3. Matthew D Hoffman, David M Blei, Chong Wang, and John Paisley. Stochastic variational infer- ence. The Journal of Machine Learning Research, 14(1):1303–1347, 2013.
+  4. Rajesh Ranganath, Sean Gerrish, and David M. Blei. Black box variational inference. In Artificial Intelligence and Statistics, 2014.
+  5. Max Welling and Yee Whye Teh. Bayesian learning via stochastic gradient Langevin dynamics. In International Conference on Machine Learning, 2011.
+  6. Michael Betancounrt. A conceptual introduction to Hamiltonian Monte Carlo. https://arxiv.org/pdf/1701.02434.pdf
+  
