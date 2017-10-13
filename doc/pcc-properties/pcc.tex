@@ -1,0 +1,25 @@
+\section{PCC}\label{sec:PCC}
+
+\begin{table}
+  \caption{Syntax for PCC}
+  \begin{tabular}{llcl}
+    (Agent) & \code{D} & {::=} & \code{c} \alt \code{c->D} \alt \code{X?pd\Hat D} \alt \code{D,D} \alt \code(X\Hat D} \alt \code{E} \\
+    (Prog) & \code{K} & {::=} & \code{E->D.} \alt \code{K K}\\
+    (Query) & \code{Q} & {::=} \code{D ?-} \alt \code{D ?- c}
+  \end{tabular}
+\end{table}
+
+\begin{table}
+  \caption{Proof System PCC}
+
+  \[
+  \begin{array}{ll}
+  \from{\sigma(\Gamma) \vdash c}\infer_1{\Gamma, c->D \vdash \Gamma,D} &\\
+  \from{Gamma, (D_1,D_2)}\infer_1{\Gamma,D_1,D_2} &\\
+  \from{Gamma, X\Hat D}\infer_1{\Gamma, D} & \mbox{$X\not\in fv(\Gamma)$}\\
+  \from{Gamma, X?pd\Hat D}\infer_p{\Gamma, X=r,D} & \mbox{$(r,p)\in pd, X\not\in fv(\Gamma)$}
+  \end{array}
+
+\]
+  \end{tabular}
+\end{table}

@@ -46,6 +46,7 @@
   breakatwhitespace=true,
   tabsize=3
 }
+\def\mcode#1{\lstinline[mathescape=true]{#1}}
 \pdfinfo{
 /Title (Properties of Probabilistic Concurrent Constraint Programs)
 /Author (Vijay Saraswat, Cristina Cornelio, Radha Jagadeesan)}
@@ -80,6 +81,8 @@ The underlying ccp framework enjoys many logical properties, related to the inte
 
 These results provide a foundation for the practical use of pcc as a probabilistic programming language.
 \end{abstract}
+
+\input{commands}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
@@ -91,18 +94,21 @@ Markov Logic networks  \cite{markovLogicNetworks} that correspond to a probabili
 Problog frameworks \cite{ProbLog_original} that associate weights to Prolog rules;
 Probabilistic Soft Logic  \cite{ProbSoftLogic} that uses soft truth values: each value in the interval $[0, 1] $ instead of $0$ ($false$) and $1$ ($true$) only;
 Probabilistic Concurrent Constraint programs \cite{PCC} that are a probabilistic extension of Concurrent Constraint programs allowing the explicit definition of random variables;
-and many others as 
+and many others, such as 
 Bayesian logic programs (BLPs)  \cite{LogicBN,LogicBN_1},
 Logic Programs with Annotated Disjunctions (LPADs) \cite{annotatedDisjunctions}, 
 CP-logic \cite{CP-logic}, 
 Independent Choice Logic (ICL) \cite{IndipendentChoiceLogic93,IndipendentChoiceLogic97}, 
-Programming in Statistical Modelling (PRISM) \cite{PRISM95,PRISM2001},  
-etc.
+Programming in Statistical Modelling (PRISM) \cite{PRISM95,PRISM2001}.
+
+
 
 The two main tasks performed on these frameworks are \emph{inference} and \emph{learning}. In this context inference consists in evaluating the probability distribution defined by a program and learning consists instead in determine the parameters that define the probability distributions directly from data. Both are particularly challenging problems in probabilistic and statistical programming.
 In many of these models the inference task is based on sampling, where the samples represent the single variables or partial worlds, for which there exists efficient techniques well known in the literature.
 
-In this paper we will focus on Stochastic Logic programs \cite{SLPcussens2000,SLPmuggleton96} and Probabilistic Concurrent Constraint programs  \cite{PCC} since the underline non-probabilistic version of them are closely related; moreover they are fragment of RCC \cite{RCC}. Therefore this work is a study of the expressiveness of the RCC model. We will show that we are able to express, using PCC programs, some of the main probabilistic models: 
+In this paper we focus on Probabilistic Concurrent Constraint (PCC) programs, introduced in 1997 \cite{PCC}, simultaneously with (and independently of) \cite{SLPmuggleton96}. PCC is based on {\em concurrent constraint programming} (CCP) a general-purpose, logic-based, determinate programming framework that exploits fragment of logic that is ``dual'' to logic programs. Clauses are of the form {\tt Head -> Body} where {\tt Head} is an atomic formula (atom), and {\tt Body} is a conjunction of {\em agents}. An agent {\tt A} is either a ``tell'' agent {\tt c} (where {\tt c} is a constraint drawn from an underlying constraint system), or an ask agent {\tt c -> A}, an existentially quantified agent {\tt X \Hat A} or an atomic formula representing a recursive invocation of an agent. 
+
+We will show that we are able to express, using PCC programs, some of the main probabilistic models: 
 Bayesian Networks  \cite{d1999inference,dechter1999bucket,B5} , Markov random fields \cite{MarkovRandomField}, Markov chains \cite{MarkovChain}, Hidden Markov Models \cite{MarkovChain}, Stochastic Context Free Grammars \cite{SCFG_1,SCFG_2} and Markov Logic networks \cite{markovLogicNetworks}. We express this last framework also in SLPs.
 
 
@@ -244,25 +250,25 @@ $X_1 : pd_1$; $X_2 : (X_1 = 0 : pd_2, X_1=1 : pd_3)$; $X_3 : pd_4$; $X_4 : (X_2 
 \end{figure}
 We can encode it in the following PCC agent: 
 \begin{lstlisting}[mathescape=true]
-joint(X$_1$,...,X$_5$)$\rightarrow$
-	X$_1$$\sim$ pd$_1$, X$_3$ $\sim$ pd$_4$, 
-	(X$_1$=0$\rightarrow$ X$_2$$\sim$ pd$_2$),X$_1$=1$\rightarrow$ X$_2$$\sim$pd$_3$,
-	(X$_2$=0,X$_3$=0$\rightarrow$ X$_4$$\sim$pd$_5$),(X$_2$=0,X$_3$=1$\rightarrow$ X$_4$$\sim$pd$_6$),
-	(X$_2$=1,X$_3$=0$\rightarrow$ X$_4$$\sim$pd$_7$),(X$_2$=1,X$_3$=1$\rightarrow$ X$_4$$\sim$pd$_8$),
-	(X$_3$=0$\rightarrow$ X$_5$$\sim$pd$_9$),(X$_3$=1$\rightarrow$ X$_5$$\sim$pd$_{10}$). 
+joint(X$_1$,...,X$_5$)->
+  X$_1$$\sim$ pd$_1$, X$_3$ $\sim$ pd$_4$, 
+  (X$_1$=0$\rightarrow$ X$_2$$\sim$ pd$_2$),X$_1$=1$\rightarrow$ X$_2$$\sim$pd$_3$,
+  (X$_2$=0,X$_3$=0$\rightarrow$ X$_4$$\sim$pd$_5$),(X$_2$=0,X$_3$=1$\rightarrow$ X$_4$$\sim$pd$_6$),
+  (X$_2$=1,X$_3$=0$\rightarrow$ X$_4$$\sim$pd$_7$),(X$_2$=1,X$_3$=1$\rightarrow$ X$_4$$\sim$pd$_8$),
+  (X$_3$=0$\rightarrow$ X$_5$$\sim$pd$_9$),(X$_3$=1$\rightarrow$ X$_5$$\sim$pd$_{10}$). 
  \end{lstlisting}
 \end{example}
 
 In general, given a Bayesian Network defined on $n$ variables $Var=\{X_1, \ldots, X_n\}$ we can define the following PCC agent:
 
 \begin{lstlisting}[mathescape=true]
-joint(X$_1$,...,X$_n$)$\rightarrow$ R$_1$,...,R$_{n_I}$,Q$_1$...,Q$_{n_D}$
+joint(X$_1$,...,X$_n$)-> R$_1$,...,R$_{n_I}$,Q$_1$...,Q$_{n_D}$
   \end{lstlisting}
 where 
 $n_I$ is the number of independent variables in $Var$. $R_i= X \sim pd_X$ where X is the $i$-th independent variable in $Var$ and $pd_X$ corresponds to the probability distribution defined by the BN over the values in the domain of $X$;
 $n_D$ is the number of dependent variables in $Var$. Each $Q_i$ is associated to a dependent variable and corresponds to a conjunction of formulas. Given a dependent variable $X$ there is exactly one sub-formula in its conjunction to each assignment of the X's parent nodes. Given the $i$-th dependent variable $X$ with parents $Y_1, \ldots, Y_p \subset Var$ we have thus a sub formula in $Q_i$ for each assignment $a=a_1,\ldots,a_p$ of $Y_1, \ldots, Y_p$ and $Q_i(a)$ is of the form:
 \begin{lstlisting}[mathescape=true]
-(Y$_1$=a$_1$,...,Y$_p$=a$_p$)$\rightarrow$ X$\sim$pd$_X^a$
+(Y$_1$=a$_1$,...,Y$_p$=a$_p$)-> X$\sim$pd$_X^a$
 \end{lstlisting}
 where $ pd_X^a$ corresponds to the probability distribution defined by the BN over the values in the domain of $X$ for the assignment of the parents nodes $a$.
 
@@ -290,10 +296,10 @@ A Markov Random Field (MRF) also called Markov network (MN) is a graphical model
 Cussens in \cite{SLPcussens2001} has formalised a MRF as a SLP.
 We can express the same joint probability over the possible assignments of the set of variables with the following PCC agent:
 \begin{lstlisting}[mathescape=true]
-joint(X$_1$,...,X$_n$)$\rightarrow$ C$_1$$\sim$pd$_1$,...,C$_k$$\sim$pd$_k$, 
-	C$_i$=([0,0,..,0])$\rightarrow$(X$_1^i$=0,...,X$_{k_i}^i$=0),
+joint(X$_1$,...,X$_n$)-> C$_1$$\sim$pd$_1$,...,C$_k$$\sim$pd$_k$, 
+	C$_i$=([0,0,..,0])->(X$_1^i$=0,...,X$_{k_i}^i$=0),
 	...,
-	C$_i$=([1,1,..,1])$\rightarrow$(X$_1^i$=1,...,X$_{k_i}^i$=1).
+	C$_i$=([1,1,..,1])->(X$_1^i$=1,...,X$_{k_i}^i$=1).
 \end{lstlisting}
 for all cliques $C_i$ defined over binary  variables $X_1^i$, $\ldots$ , $X{k_i}^i$, with domain $\{0,1\}$. Similarly for the non-binary case.
 
@@ -316,16 +322,16 @@ A formalisation of HMM as SLP could be found in \cite{SLPmuggleton96} where SLPs
 
 Formally we consider a HMM over a set of states $s_1, \cdots, s_n$ with transition probability $\mathbb{P}(s_i|s_j)=p_j^i$ and labelled productions $l_1, \cdots, l_m$ with output probability $\mathbb{P}(l_i|s_j)=q_i^j$. We can define an HMM with a clause for each non-terminal state $s$:
 \begin{lstlisting}[mathescape=true]
-hmm(s$_c$,O) $\rightarrow$
-	X $\sim$ s$_1$/p$_1^c$+... +s$_n$/p$_n^c$, 
-	X=s$_1$$\rightarrow$ Y$\sim$l$_1$/q$_1^1$+...+l$_m$/q$_m^1$,
-	...,
-	X=s$_n$$\rightarrow$ Y$\sim$ l$_1$/q$_1^n$+...+l$_m$/q$_m^n$,
-	O=[Y|Out], hmm(X,Out).
+hmm(s$_c$,O) ->
+  X $\sim$ s$_1$/p$_1^c$+... +s$_n$/p$_n^c$, 
+  X=s$_1$$\rightarrow$ Y$\sim$l$_1$/q$_1^1$+...+l$_m$/q$_m^1$,
+  ...,
+  X=s$_n$$\rightarrow$ Y$\sim$ l$_1$/q$_1^n$+...+l$_m$/q$_m^n$,
+  O=[Y|Out], hmm(X,Out).
 \end{lstlisting}
 \noindent where $s_c$ corresponds to the current state, $O$ to the current output and the clause for each terminal state $s_t$:
 \begin{lstlisting}[mathescape=true]
-hmm(s$_t$,O)$\rightarrow$ O=[].
+hmm(s$_t$,O)-> O=[].
 \end{lstlisting}
 
 Asking \lstinline[mathescape=true]{hmm(s,Y)-?} we obtain the probability distribution over all the possible sequences $Y$ generated starting from a initial state $s$.
@@ -334,27 +340,27 @@ Asking \lstinline[mathescape=true]{hmm(s,Y)-?} we obtain the probability distrib
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Markov Chains (MCs)}
 
-A discrete-time Markov chain is a sequence of random variables defined over the the same domain: a set of states $s_1, ... , s_n$. Each random variable is defined by a probability distribution over the set of states, that corresponds to the probability of moving to next state and it depends only on the present state and not on the previous and future ones. The probability to move from a state $s_i$ to a state $s_j$ is given by the parameter $p_i^j= \mathbb{P} (s_j |s_i)$, that could also be $0$, and satisfies the property: $\sum_{j=1}^n p_i^j =1$ .
+A discrete-time Markov chain is a sequence of random variables defined over the the same domain: a set of states $s_1, \ldots, s_n$. Each random variable is defined by a probability distribution over the set of states, that corresponds to the probability of moving to next state and it depends only on the present state and not on the previous and future ones. The probability to move from a state $s_i$ to a state $s_j$ is given by the (possibly zero) parameter $p_i^j= \mathbb{P} (s_j |s_i)$, and satisfies the property: $\sum_{j=1}^n p_i^j =1$ .
 
-The SLP formulation of MCs can be seen as special case of HMMs \cite{SLPmuggleton96,SLPcussens2001}.
-Given a MC defined on $n$ states $s_1, \cdots , s_n$ we represent its SLP formulation explicitly as:
-\begin{lstlisting}[mathescape=true]
-p$_i^0$:  MC(s$_i$, X) :- MC(s$_0$, X).
-...,
-p$_i^{n}$:  MC(s$_i$, X):- MC(s$_n$, X).
-MC(s$_f$,s$_f$).
-\end{lstlisting}
-where $s_f$ are the absorbing states (states with $p_f^f=1$ and $p_f^k=0 ~ \forall k \not=f$).
+%The SLP formulation of MCs can be seen as special case of HMMs \cite{SLPmuggleton96,SLPcussens2001}.
+%Given a MC defined on $n$ states $s_1, \cdots , s_n$ we represent its SLP formulation explicitly as:
+%\begin{lstlisting}[mathescape=true]
+%p$_i^0$:  MC(s$_i$, X) :- MC(s$_0$, X).
+%...,
+%p$_i^{n}$:  MC(s$_i$, X):- MC(s$_n$, X).
+%MC(s$_f$,s$_f$).
+%\end{lstlisting}
+%where $s_f$ are the absorbing states (states with $p_f^f=1$ and $p_f^k=0 ~ \forall k \not=f$).
 
-The query \lstinline[mathescape=true]{?- MC(s$_0$, X)}
-will produce all the possible final states from an initial state $s_0$.
+%The query \lstinline[mathescape=true]{?- MC(s$_0$, X)}
+%will produce all the possible final states from an initial state $s_0$.
 
 The PCC formulation is:
 \begin{lstlisting}[mathescape=true]
-MC(S$_i$,X)$\rightarrow$(Y$\sim$s$_0$/p$_i^0$+...+s$_n$/p$_i^{n}$, MC(Y,X)),
-	MC(s$_f$,X)$\rightarrow$MC(s$_f$,s$_f$).
+mc(S$_i$,X)->(Y$\sim$s$_0$/p$_i^0$+...+s$_n$/p$_i^{n}$, MC(Y,X)),
+mc(s$_f$,X)-> mc(s$_f$,s$_f$).
 \end{lstlisting}
-The queries \lstinline[mathescape=true]{MC(s$_0$, s$_f$)-?} and \lstinline[mathescape=true]{MC(s$_0$, X)-?} returns respectively the probability to start from the state $s_0$ and arrive in the state $s_f$ and the probability distribution over the set of final states, starting from the state $s_0$.
+The queries \lstinline[mathescape=true]{mc(s$_0$, s$_f$)-?} and \lstinline[mathescape=true]{mc(s$_0$, X)-?} returns respectively the probability to start from the state $s_0$ and arrive in the state $s_f$ and the probability distribution over the set of final states, starting from the state $s_0$.
 
 
 
@@ -377,19 +383,19 @@ Given a SCFG in Chomsky Normal Form, each non terminal element $nt_i$ is associa
 $nt_i \rightarrow (nt,nt)_j$ with probability $p_i^j$ and $nt_i \rightarrow t_k$ with probability $q_i^k$ and $\sum_j p_i^j + \sum_k q_i^k=1$. We can define the following PCC agent inducing the same probability over the productions:
 for the $i$-th non-terminal $N$, we have:
 \begin{lstlisting}[mathescape=true]
-scfg(O,[N|K],T)$\rightarrow$
-	X$\sim$ [nt,nt]$_1$/p$^i_1$+...+[nt,nt]$_n$/p$^i_{n}$+
-	t$_1$/q$^i_1$+...+t$_m$/q$^i_m$,
-	T=[N|T1],append(X, K, XK),scfg(O,XK,T1).
+scfg(O,[N|K],T) ->
+  X$\sim$ [nt,nt]$_1$/p$^i_1$+...+[nt,nt]$_n$/p$^i_{n}$+
+  t$_1$/q$^i_1$+...+t$_m$/q$^i_m$,
+  T=[N|T1],append(X, K, XK),scfg(O,XK,T1).
 \end{lstlisting}
 for every terminal $d$, we have:
 \begin{lstlisting}[mathescape=true]
-scfg(O,[d|K],T)$\rightarrow$
-	O=[d|O1],T=[d|T1],scfg(O1,K,T1).
+scfg(O,[d|K],T)->
+  O=[d|O1],T=[d|T1],scfg(O1,K,T1).
 \end{lstlisting}
 and for an empty sequence:
 \begin{lstlisting}[mathescape=true]
-scfg(O,[],T) $\rightarrow$ O=[],T=[].
+scfg(O,[],T) -> O=[],T=[].
 \end{lstlisting}
 where $(nt,nt)_j$ are all the possible pairs of non terminal elements and $t_j$ are all the possible terminal elements.
 The first argument of the agent $scfg$ corresponds to the current output string, the second argument to the list of elements to process (terminal or non-terminal), and the last argument corresponds to the parsing tree.
@@ -401,139 +407,7 @@ We can generate sentences using the following query: \lstinline{scfg(O,r,T)-?}. 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\subsection{Markov Logic networks (MLNs)}
-Markov Logic networks \cite{markovLogicNetworks} are defined as a collection of first order logical formulas $F_j$, each associated with a real number $w_j$, the {\em weight} of the rule. Given a set of constants $\{c_1,\ldots, c_k\}$ (in a 1-1 relationship with intended domain of interpretation), the joint probability of a given the truth values $X_1 ... X_n$ of the ground atoms $a_1,\ldots, a_n$ is defined as:
-$$ joint(X_1,\ldots, X_n)= (1/Z)\times \prod_{F_j} e^{w_j n_j}$$ where $n_j$ is the number of true groundings of $F_j$ given the assignment of ground atoms $X_1, \ldots, X_n$, and $Z$ is the normalization factor.
-
-Let the atomic formulas occurring in all groundings of all formulas be enumerated as $a_1,\ldots, a_n$. For any formula $F_i$ let $F^i_1, \ldots, F^i_{p_i}$ enumerate its $p_i$ groundings. For any ground formula $F$, let $[F]$ stand for the formula obtained by replacing each occurrence of $a_j$ by $X_j$, for all $j$. Then we can define:
-We can represent an MLN with formulas $F_1, \ldots, F_k$ as an PCC agent, defined on the $m$ variables $X_1, \ldots, X_m$ each one with domain $\{ true, false \}$ and corresponding to a ground atom $a_j$, and random variables $Y_i^j$ that correspond to the truth assignments of the grounding formula $[F]_i^j$ described above:
-\begin{lstlisting}[mathescape=true]
-jt(X$_1$,...,X$_n$) $\rightarrow$ 
-	Y$_1^1$$\sim$ true/e$^{w_1}$+ false/e$^0$ , v([F]$_1^1$,Y$_1^1$),
-	...,
-	Y$_1^{p_1}$$\sim$ true/e$^{w_1}$+ false/e$^0$ , v([F]$_{p_1}^1$,Y$_{p_1}^1$),
-	...,
-	Y$_k^1$$\sim$ true/e$^w_k$+ false/e$^0 $,  v([F]$_k^1$,Y$_k^1$)
-	...,
-	Y$_k^{p_k}$$\sim$ true/e$^{w_k}$+ false/e$^0$,  v([F]$_{p_k}^k$,Y$_{p_k}^k$),
-	 b(X$_1$), ..., b(X$_m$).
-	
-b(X) $\Leftrightarrow$ X=true; X=false.
-
-v(and(A,B),true) $\Leftrightarrow$ v(A,true), v(B,true).
-v(or(A,B),true) $\Leftrightarrow$ v(A,true); v(B,true).
-v(not(A),true) $\Leftrightarrow$ v(A,false).
-v(v(X),true) $\Leftrightarrow$ X=true.
-
-v(and(A,B),false) $\Leftrightarrow$ v(A,false); v(B,false).
-v(or(A,B),false) $\Leftrightarrow$ v(A,false), v(B,false).
-v(not(A),false) $\Leftrightarrow$ v(A,true)
-v(v(X),false) $\Leftrightarrow$ X=false.
-\end{lstlisting}
-The use of predicates \lstinline[mathescape=true]{b(X$_1$), ..., b(X$_m$)} ensure the binding of the variables \lstinline[mathescape=true]{X$_1$, ..., X$_m$}.
-The last part of the PCC program (last 8 lines) defines the meta-interpreter for full FOL. This allow to define MLN in  PCC and SLP not only on definite clauses but in full first order logic. We use the idea developed in a work of Beckert and Posegga \cite{lean-TAP} in which they provide a Prolog implementation (see also \cite{lean-TAP-website}) for first order logic, restricting to finite proofs.
-
-
-\begin{example}\label{ex_mln}
-Following the example given by Richardson et al. \cite{markovLogicNetworks}, we consider the following three formulas $F_1$, $F_2$ and $F_3$: \emph{``Smoking causes cancer''} $F_1=\neg sm(X) \vee ca(X)$ with weight $w_1=1.5$; 
-\emph{``If two people are friends, either both smoke or neither does''} $F_2 = \neg fr(X, Y) \vee sm(X) \vee \neg sm(Y)$ and $F_3= \neg fr(X, Y) \vee \neg sm(X) \vee sm(Y) $ with weights $w_2=w_3=1.1$.
-\begin{figure}[h!]
-\centering
-\begin{tikzpicture}[scale=0.53]
-\scriptsize
-\tikzstyle{every node}=[draw,shape=ellipse,fill=gray!30];
-\node (x1) at (0, 2) {$fr(a,a)$};
-\node (x2) at (2, 0) {$ca(a)$};
-\node (x3) at (4, 2) {$sm(a)$};
-\node (x4) at (6, 0) {$fr(b,a)$};
-\node (x5) at (6, 4) {$fr(a,b)$};
-\node (x6) at (8, 2) {$sm(b)$};
-\node (x7) at (10, 0) {$ca(b)$};
-\node (x8) at (12, 2) {$fr(b,b)$};
-\draw [-]  (x1) -- (x3);
-\draw [-]  (x2) -- (x3);
-\draw [-]  (x3) -- (x4);
-\draw [-]  (x3) -- (x5);
-\draw [-]  (x3) -- (x6);
-\draw [-]  (x6) -- (x8);
-\draw [-]  (x6) -- (x7);
-\draw [-]  (x6) -- (x4);
-\draw [-]  (x6) -- (x5);
-%\coordinate [label=right:$c_1$] (p) at (5.5,2.8);
-%\coordinate [label=right:$c_2$] (p) at (5.5,1.3);
-%\coordinate [label=right:$c_3$] (p) at (1.6,2.3);
-%\coordinate [label=right:$c_4$] (p) at (2.2,1.2);
-%\coordinate [label=right:$c_6$] (p) at (8.6,1.2);
-%\coordinate [label=right:$c_5$] (p) at (9.3,2.3);
-\end{tikzpicture}
-\caption{MLN of Example \ref{ex_mln}}
-\label{mln}
-\end{figure}
-In Figure \ref{mln} we can see the graph of the ground Markov network defined by formulas $F_1$, $F_2$ and $F_3$ and the constants \emph{Anna} ($a$) and \emph{Bob} ($b$).
-
-
-The equivalent PCC agent is defined as follows. Assume the ground atomic formulas are enumerated as: \lstinline|fr(a,b)| as \lstinline|(X$_1$)|, \lstinline|fr(a,a)| as \lstinline|(X$_2$)|, \lstinline|sm(a)| as \lstinline|(X$_3$)|, \lstinline|sm(b)| as \lstinline|(X$_4$)|, \lstinline|fr(b,b)| as \lstinline|(X$_5$)|, \lstinline|ca(a)| as \lstinline|(X$_6$)|, \lstinline|fr(b,a)| as \lstinline|(X$_7$)| and \lstinline|ca(b)| as \lstinline|(X$_8$)|. Then we have:
-\begin{lstlisting}[mathescape=true]
-jt(X$_1$,...,X$_8$) $\rightarrow$ 
-	Y$_1^1$$\sim$ true/e$^{w_1}$+ false/e$^0$ , 
-	v(or(not(X$_3$), X$_6$),Y$_1^1$),
-	Y$_1^2$$\sim$ true/e$^{w_1}$+ false/e$^0$ , 
-	v(or(not(X$_4$), X$_8$),Y$_1^2$),	
-	Y$_2^1$$\sim$ true/e$^{w_2}$+ false/e$^0$ ,
-	v(or(not(X$_1$),or(X$_3$, not(X$_4$)),Y$_2^1$),
-	Y$_2^2$$\sim$ true/e$^{w_2}$+ false/e$^0$ ,
-	v(or(not(X$_2$),or(X$_3$, not(X$_3$)),Y$_2^2$),
-	Y$_2^3$$\sim$ true/e$^{w_2}$+ false/e$^0$ ,
-	v(or(not(X$_5$),or(X$_4$, not(X$_4$)),Y$_2^3$),
-	Y$_2^4$$\sim$ true/e$^{w_2}$+ false/e$^0$ ,
-	v( or(not(X$_7$),or(X$_4$, not(X$_3$)),Y$_2^4$),
-	Y$_3^1$$\sim$ true/e$^{w_3}$+ false/e$^0$ ,
-	v(or(not(X$_1$),or(not(X$_3$), X$_4$)),Y$_3^1$),
-	Y$_3^2$$\sim$ true/e$^{w_3}$+ false/e$^0$ ,
-	v(or(not(X$_2$),or(not(X$_3$), X$_3$)),Y$_3^2$),
-	Y$_3^3$$\sim$ true/e$^{w_3}$+ false/e$^0$ ,
-	v(or(not(X$_5$),or(not(X$_4$), X$_4$)),Y$_3^3$),	
-	Y$_3^4$$\sim$ true/e$^{w_3}$+ false/e$^0$ , 
-	v(or(not(X$_7$),or(not(X$_4$), X$_3$)),Y$_3^4$),
-	b(X$_1$), ... , b(X$_8$).
-\end{lstlisting}
-\end{example}
-
-
-It is important to notice that the PCC representation of a MLN has un-normalised weights for its random variables. It is easy to find a normalisation constant that allow to recover the original MLN probability distribution over complete truth assignment of the variables (corresponding to successful executions of the PCC agent) since in the PCC formulation the probability of an execution is the product of the probability over the full set of variables (in each execution we sample all the random variables). So we consider a random variable of the form:
-\begin{lstlisting}[mathescape=true]
-Y$_i^j$$\sim$ true/e$^{w_i}$+false/e$^0$
-\end{lstlisting}
-as:
-\begin{lstlisting}[mathescape=true]
-Y$_i^j$ $\sim$ true/$\frac{e^{w_i}}{e^{w_i}+e^0 }$+false/$\frac{e^0}{e^{w_i}+e^0 }$
-\end{lstlisting}
- and at the end of the computation we multiply every execution probability for the following normalisation constant:
- $$Z=\prod_{i=1}^k \prod_{j=1}^{p_i} (e^{w_i} +e^0)=\prod_{i=1}^k (e^{w_i} +e^0)^{p_i}$$
-
-
-
-
-
-
-\begin{theorem}
-Given a MLN $\mathcal{M}$ defined over a set of clauses $F_j$ and its PCC translation $\mathcal{P}$ 
-the probability distribution $pd_{\mathcal{M}}$ defined by $\mathcal{M}$ over the complete truth assignments of the ground atoms  is equal to the probability distribution $pd_{\mathcal{P}}$ defined by $\mathcal{P}$ over the complete truth assignments of the ground atoms.
-\end{theorem}
-\begin{proof}
-Given a input $x_1, \ldots ,x_n$ where $x_1, \ldots , x_n$ are the truth values of the ground atoms $a_1,\ldots, a_n$ generated by the MLN, we want to prove that the probability of $pd_{\mathcal{P}}$ is equal to $pd_{\mathcal{M}}$ on this input. Given the definition of MLN, we have that $pd_{\mathcal{M}}(x_1, \ldots ,x_n)=\prod_{F_j} e^{w_j n_j}$.
-
-Each execution of the PCC agent provide a complete instantiation of the variables $Y_i^j$ by definition of the predicate $jt$. We have thus that the truth value of each grounding formula $[F]_i^j$ is defined: \lstinline[mathescape=true]{v([F]$_i^j$,Y$_i^j$)}. 
-
-The probability of such combination (and the corresponding execution) is the product of the factors associated with each choice: we have a factor $e^{w_i}$ for each \lstinline[mathescape=true]{v([F]$_i^j$,true)} used and $e^0$ for each \lstinline[mathescape=true]{v([F]$_i^j$,false)} used. Only one of these combinations will succeed, since the input $x_1, \ldots ,x_n$ determines uniquely only one consistent instantiation of the $[F]_i^j$. This is implied by the fact that each variable is bounded during the execution and the correctness is ensured by the meta-interpreter.
-Thus there is only one sampling execution that will succeeds, since every input $x_1,\ldots,x_m$ is consistent with only one instantiation of the $[F]_i^j$.
-\end{proof}
-
-
-
-We can define a the same encoding of MLNs in PCCs also in SLPs with minor modifications that we omit due to lack of space. It is important to notice that the SLP formalisation of MLN corresponds to an un-normalised and impure SLP program: un-normalised because the sum of the weights for clauses whose heads share the same predicate could be greater than $1$, and impure since there are rules that don't have a weight.
-
+\input{MLN.tex}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
